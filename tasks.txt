@@ -1,0 +1,5 @@
+1.create api calling application that saves and gets the data by specific requests
+    example:
+        get weather by location by day represent temp by {{time}},rain persentage by {{time}}
+2.create application that saves the api called info 
+
