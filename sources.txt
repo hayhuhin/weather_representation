@@ -1,3 +1,19 @@
 https://click.palletsprojects.com/en/8.1.x/
 https://jinja.palletsprojects.com/en/3.1.x/
 https://flask.palletsprojects.com/en/3.0.x/
+
+
+api sources
+https://openweathermap.org/api
+https://www.weatherapi.com/pricing.aspx
+
+
+redis
+https://redis.io/docs/manual/
+https://redis.io/docs/manual/client-side-caching/
+
+
+flask
+https://flask.palletsprojects.com/en/3.0.x/tutorial/
+https://flask.palletsprojects.com/en/3.0.x/tutorial/database/
+

@@ -1,7 +1,7 @@
 BASE_URI = "http://api.weatherapi.com/v1"
 HISTORY = "/history.json"
 Q = "&q="
-DATE_TIME = "&dt="
+START_DATE = "&dt="
 END_DATE = "&end_dt="
 KEY = "?key="
 LANG_OPTION = "&lang="

@@ -1,33 +1,125 @@
 from dotenv import load_dotenv
 from pathlib import Path
-import os
+import os,json
 import requests
-from settings import BASE_URI,HISTORY,Q,DATE_TIME,END_DATE,KEY
+from settings import BASE_URI,HISTORY,Q,START_DATE,END_DATE,KEY
+from datetime import date
+from serializer import WeekDataSerializer
+
+
 load_dotenv()
 
+class JsonFilter:
+    def __init__(self,json_data) -> None:
+        self.json = json_data
+        self.serializer = WeekDataSerializer(location=self.json["location"]["country"],weather_data=self.json["forecast"]["forecastday"])
 
 
-class ApiCaller(object):
+    def data_by_days(self) -> dict:
+        data = self.serializer.daily_data()
+        return data
+
+
+    def specific_day_data(self,date) -> dict:
+        days_dict = self.data_by_days()
+        hourly_dict = {}
+        for items in days_dict[date]["hourly_data"]:
+            hourly_dict[items["time"]] = {
+                "will_it_rain" :items["will_it_rain"],
+                "chance_of_rain" :items["chance_of_rain"],
+                "wind_kph" :items["wind_kph"],
+                "feelslike_c" :items["feelslike_c"],
+                "temp_c" :items["temp_c"],
+                # "wind_dir" :items["SE"],
+                }
+
+        return hourly_dict
     
-    def __init__(self,uri,api_key):
+
+
+    
+
+
+
+
+
+class ApiCaller:
+    """
+    this class have methods that sending api requests to the api server by the user
+
+    Methods:
+        weather_by_range(user_data(dict)):this getting the requested data like start date end date the the user ip
+    """
+    
+    def __init__(self,uri,api_key,source):
         self.uri = uri
         self.key = api_key
+        self.source = source
 
-    
-    #the default method that called first time 
-    def weather_default(self,user,user_position):
+
+    def queue_micro_service(self):
+        """
+        later this method will be displayed each time the user will refresh the page and try to requery the api
+        this will validate that the user not sending infinite times api calls  
+        """
+        #! for now returns always True
+        return True
+
+
+    def weather_default(self):
         start_date = "2024-01-01"
-        end_date = "2024-01-01"
-        get_query = self.uri+KEY+self.key+Q+user_position+DATE_TIME+start_date
-        # print(get_query)
+        # end_date = str(date.today())
+        get_query = f"{self.uri+KEY+self.key}&q=Israel{START_DATE+start_date}"
         api_request = requests.get(get_query)
-        print(api_request.json())
+        return api_request.json()
+    
+
+    #the default method that called first time 
+    def weather_by_range(self,request_data:dict):
+        #this validates that the user not spamming api requests too many times
+        if self.queue_micro_service():
+            basic_keys = ["start_date","end_date","ip"]
+            for keys in basic_keys:
+                if keys not in request_data.keys():
+                    weather_default = self.weather_default()
+                    return weather_default
+
+
+            start_date = request_data["start_date"]
+            end_date = request_data["end_date"]
+            user_ip = request_data["ip"]
+            get_query = f"{self.uri+KEY+self.key}&q={user_ip}{START_DATE+start_date}{END_DATE+end_date}"
+            api_request = requests.get(get_query)
+            return api_request.json()
 
 
 
 if __name__ == "__main__":
-    test = ApiCaller(uri=BASE_URI+HISTORY,api_key=os.getenv("API_KEY"))
+    api_key = os.getenv("API_KEY")
+    ip = os.getenv("IP")
+    data = {"ip":ip,"start_date":"2023-12-26","end_date":"2024-01-01"}
+    source = "weatherapi.com"
 
-    get_weather = test.weather_default(user="valeri",user_position="2a00:a040:1a3:dfe9:f137:4f80:d019:8b79")
 
+    #*this was for testing the methods and succesfully created
+    # test_api_caller = ApiCaller(uri=BASE_URI+HISTORY,api_key=api_key,source=source)
+    # get_weather = test_api_caller.weather_by_range(request_data=data)
+
+
+    #*this was created for the mock data
+    # with open("./backend/api_application/mock_data.json","w") as json_file:
+    #     json.dump(get_weather,json_file)
+    #     print(get_weather)
+
+    
+    #*this created to work with JsonFilter class
+    with open("mock_data.json","r") as json_file:
+        json_data = json.load(json_file)
+        json_filter_class = JsonFilter(json_data=json_data)
+        result = json_filter_class.specific_day_data(date="2024-01-01")
+        print(result)
+        # result = json_filter_class.data_by_days()
+        # json_filter_class.hourly_data()
+        # print(result["2024-01-01"])
+    
 
