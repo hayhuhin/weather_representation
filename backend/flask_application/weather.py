@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from redis_application.redis_handler import RedisConnector
 from api_application.api_caller import ApiCaller,JsonFilter
 from plotly_application.graph_presentation import GraphRepresantation
+from view import ViewClass
 
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -46,6 +47,7 @@ app.secret_key = os.getenv('SECRET_FLASK_KEY')
 redis_client = RedisConnector(host=host_uri,port=port,username=username,password=password)
 api_connector = ApiCaller(uri=api_uri,api_key=api_key,source="weather_api")
 graph_repr = GraphRepresantation()
+view = ViewClass(redis=redis_client,api=api_connector,graph=graph_repr,ip=request.remote_addr,json=JsonFilter)
 
 
 
@@ -62,7 +64,7 @@ def home_page():
         return render_template("home.html")
     #if the key not exists then creating one with the default TTL 
     else:
-        #* need to add start as today end as future by week
+        
         #default values
         start = "2024-01-04"
         end = "2024-01-05"
@@ -79,7 +81,7 @@ def home_page():
         #querying the api and saving the response json
         json_response = api_connector.weather_by_range(request_data=cleaned_data)
         #getting the specific data needed from the api call
-        #!uncomment it in prod
+
         json_filter = JsonFilter(json_data=json_response)
 
         day_weather_data = json_filter.specific_day_data(date=start)
@@ -90,99 +92,130 @@ def home_page():
 
 
 
-@app.route('/weather', methods=['GET'])
+@app.route('/weather', methods=['GET','POST'])
 def weather_info():
     #user ip address
-    user_ip = request.remote_addr
-    #checking if the key is already exists
-    found_key = redis_client.exists(key=user_ip)
+    if request.method == "GET":
+        user_ip = request.remote_addr
+        #checking if the key is already exists
+        found_key = redis_client.exists(key=user_ip)
 
-    #the user is already have data in redis
-    if found_key:
-        required_data = redis_client.get(key=request.remote_addr)#TODO add values arg for quering specific data
+        #the user is already have data in redis
+        if found_key:
+            required_data = redis_client.get(key=request.remote_addr)
 
-        #if the weather repr is week so it will represent it as a week
-        if required_data["weather_repr"] == "week":
-            #the data structured in a way that the graph_html can proccess it
-            temp_c = required_data["content_data"][0]
-            will_it_rain = required_data["content_data"][1]
-            chance_of_rain = required_data["content_data"][2]
-            wind_kph = required_data["content_data"][3]
-            feelslike_c = required_data["content_data"][4]
+            
 
-
-
-            # graph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=dict_values,graph_repr="1_row",path="")
-            temp_c_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=temp_c,graph_repr="1_row",path="")
-            will_it_rain_html= graph_repr.graph_options(graph_type="bar_graph",dict_values=will_it_rain,graph_repr="1_row",path="")
-            chance_of_rain_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=chance_of_rain,graph_repr="1_row",path="")
-            wind_kph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=wind_kph,graph_repr="1_row",path="")
-            feelslike_c_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=feelslike_c,graph_repr="1_row",path="")
-
-            weather_graph = {
-                "temp_c_html":temp_c_html,
-                "will_it_rain_html":will_it_rain_html,
-                "chance_of_rain_html":chance_of_rain_html,
-                "wind_kph_html":wind_kph_html,
-                "feelslike_c_html":feelslike_c_html
+            #first im calling the api and passing the data into JsonFilter class that filtering the data into more specific needed data
+            #this specific data passed into the plotly graph repr and saved as html that passed into the user content
+            #* need to add start as today end as future by week
+            start = "2024-01-01"
+            end = "2024-01-01"
+            ip = request.remote_addr
+            sorted_by = "daily"
+            cleaned_data = {
+                "start_date":start,
+                "end_date":end,
+                "ip":ip,
+                "sorted_by":sorted_by
             }
+            #querying the api and saving the response json
+            # json_response = api_connector.weather_by_range(request_data=cleaned_data)
+            #getting the specific data needed from the api call
+            api_data = api_connector.weather_by_range(request_data=cleaned_data)
+            json_filter = JsonFilter(json_data=api_data)
+            default_view = json_filter.specific_day_data(date=start)
+            #this adding the cache data into the redis db
+            result = redis_client.set_key(key=user_ip,value={"user_data":default_view})
+            #the gathered data from the users redis
+            required_data = redis_client.get(key=request.remote_addr)
 
 
 
-            return render_template("weather.html",content=weather_graph)
+            for time in required_data["user_data"]:
+                
+                x.append(time)
+                y.append(int(required_data["user_data"][time]["temp_c"]))
+
+            dict_values= {"x":x,"y":y,"y_2":[]}
+            graph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=dict_values,graph_repr="1_row",path="")
 
 
 
-        #it will represent it as a day 
-        elif required_data["weather_repr"] == "day":
-            pass
+            #*for testing only
+            return render_template("weather.html",content={"graph_html":graph_html})
         
 
 
-        # return render_template("weather.html",content=f"user already exists{user_ip}")
-        #if the key not exists then creating one with the default TTL 
-    else:
-        #first im calling the api and passing the data into JsonFilter class that filtering the data into more specific needed data
-        #this specific data passed into the plotly graph repr and saved as html that passed into the user content
-        #* need to add start as today end as future by week
-        start = "2024-01-01"
-        end = "2024-01-01"
-        ip = request.remote_addr
-        sorted_by = "daily"
-        cleaned_data = {
-            "start_date":start,
-            "end_date":end,
-            "ip":ip,
-            "sorted_by":sorted_by
-        }
-        #querying the api and saving the response json
-        # json_response = api_connector.weather_by_range(request_data=cleaned_data)
-        #getting the specific data needed from the api call
-        #!uncomment it in prod
-        # json_filter_class = JsonFilter(json_data=json_data)
-        default_view = json_filter_class.specific_day_data(date=start)
-        #this adding the cache data into the redis db
-        result = redis_client.set_key(key=user_ip,value={"user_data":default_view})
-        #the gathered data from the users redis
-        required_data = redis_client.get(key=request.remote_addr)
+            # return render_template("weather.html",content=f"user already exists{user_ip}")
+            #if the key not exists then creating one with the default TTL 
+       
+       
+       
+        else:
+            if required_data["weather_repr"] == "day":
+                #the data structured in a way that the graph_html can proccess it
+                temp_c = required_data["content_data"][0]
+                will_it_rain = required_data["content_data"][1]
+                chance_of_rain = required_data["content_data"][2]
+                wind_kph = required_data["content_data"][3]
+                feelslike_c = required_data["content_data"][4]
 
+                # graph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=dict_values,graph_repr="1_row",path="")
+                temp_c_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=temp_c,graph_repr="1_row",path="")
+                will_it_rain_html= graph_repr.graph_options(graph_type="bar_graph",dict_values=will_it_rain,graph_repr="1_row",path="")
+                chance_of_rain_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=chance_of_rain,graph_repr="1_row",path="")
+                wind_kph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=wind_kph,graph_repr="1_row",path="")
+                feelslike_c_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=feelslike_c,graph_repr="1_row",path="")
 
-        dict_values = {}
-        x = []
-        y = []
-
-        for time in required_data["user_data"]:
-            
-            x.append(time)
-            y.append(int(required_data["user_data"][time]["temp_c"]))
-
-        dict_values= {"x":x,"y":y,"y_2":[]}
-        graph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=dict_values,graph_repr="1_row",path="")
+                weather_graph = {
+                    "temp_c_html":temp_c_html,
+                    "will_it_rain_html":will_it_rain_html,
+                    "chance_of_rain_html":chance_of_rain_html,
+                    "wind_kph_html":wind_kph_html,
+                    "feelslike_c_html":feelslike_c_html
+                }
+                return render_template("weather.html",content=weather_graph)
 
 
 
-        #*for testing only
-        return render_template("weather.html",content={"graph_html":graph_html})
+            #! working on for now this section is not valid
+            #it will represent it as a day 
+            elif required_data["weather_repr"] == "week":
+                temp_c = required_data["content_data"][0]
+                will_it_rain = required_data["content_data"][1]
+                chance_of_rain = required_data["content_data"][2]
+                wind_kph = required_data["content_data"][3]
+                feelslike_c = required_data["content_data"][4]
+
+                # graph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=dict_values,graph_repr="1_row",path="")
+                temp_c_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=temp_c,graph_repr="1_row",path="")
+                will_it_rain_html= graph_repr.graph_options(graph_type="bar_graph",dict_values=will_it_rain,graph_repr="1_row",path="")
+                chance_of_rain_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=chance_of_rain,graph_repr="1_row",path="")
+                wind_kph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=wind_kph,graph_repr="1_row",path="")
+                feelslike_c_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=feelslike_c,graph_repr="1_row",path="")
+
+                weather_graph = {
+                    "temp_c_html":temp_c_html,
+                    "will_it_rain_html":will_it_rain_html,
+                    "chance_of_rain_html":chance_of_rain_html,
+                    "wind_kph_html":wind_kph_html,
+                    "feelslike_c_html":feelslike_c_html
+                }
+
+                return render_template("weather.html",content=weather_graph)
+
+
+        
+        
+    if request.method == "POST":
+        user_ip = request.user
+        user_key = redis_client.get(key=request.remote_addr)
+        print(request.POST)
+        return redirect("/weather")
+
+#this section is the buttons that ill have to change the repr of the page
+
 
 
 

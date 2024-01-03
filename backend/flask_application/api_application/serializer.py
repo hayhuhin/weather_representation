@@ -19,7 +19,7 @@ class WeekDataSerializer:
                 "hourly_data":days["hour"]}
         return daily_dict
     
-    
+
     # def hourly_data(self):
     #     daily_dict = self.daily_data()
     #     hourly_filtered_data = {}

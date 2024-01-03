@@ -3,7 +3,7 @@ from pathlib import Path
 import os,json
 import requests
 from datetime import date
-from .serializer import WeekDataSerializer
+from serializer import WeekDataSerializer
 load_dotenv()
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,13 +22,36 @@ with open(CURR_DIR+"/mock_data.json","r") as json_file:
 class JsonFilter:
     def __init__(self,json_data) -> None:
         self.json = json_data
-        print(self.json)
         self.serializer = WeekDataSerializer(location="london",weather_data=self.json["forecast"]["forecastday"])
 
 
     def data_by_days(self) -> dict:
         data = self.serializer.daily_data()
         return data
+
+
+
+    def specific_week_data(self,start_date:str,end_date:str):
+        #return temp_c
+        # return feelslike_c
+        # maxtemp_c
+        # mintemp_c
+        # avgtemp_c
+
+        filtered_data = {}
+        for data in self.json["forecast"]["forecastday"]:
+            filtered_data[data["date"]] = {
+                "maxtemp_c":data["day"]["maxtemp_c"],
+                "mintemp_c":data["day"]["mintemp_c"],
+                "avgtemp_c":data["day"]["avgtemp_c"],
+                "daily_will_it_rain":data["day"]["daily_will_it_rain"],
+                "daily_chance_of_rain":data["day"]["daily_chance_of_rain"],
+                }
+
+        return filtered_data
+
+
+            # print(data["date"],data["day"]["maxtemp_c"])
 
 
     def specific_day_data(self,date) -> dict:
@@ -139,9 +162,15 @@ class JsonFilter:
     
         
 
-# test = JsonFilter(json_data=json_data)
-# data = test.specific_day_data("2023-12-31")
-# print(data[0],data[1],data[2],data[3])
+test = JsonFilter(json_data=json_data)
+
+data = test.specific_week_data(start_date="2023-12-20",end_date="2023-12-27")
+
+
+
+
+
+
 
 
 class ApiCaller:
