@@ -5,13 +5,15 @@ import requests
 from datetime import date
 from .serializer import WeekDataSerializer
 load_dotenv()
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 
 mock_data = None
 #*this created to work with JsonFilter class
-with open("mock_data.json","r") as json_file:
+with open(CURR_DIR+"/mock_data.json","r") as json_file:
     json_data = json.load(json_file)
+    
 
 
 
@@ -20,7 +22,8 @@ with open("mock_data.json","r") as json_file:
 class JsonFilter:
     def __init__(self,json_data) -> None:
         self.json = json_data
-        self.serializer = WeekDataSerializer(location=self.json["location"]["country"],weather_data=self.json["forecast"]["forecastday"])
+        print(self.json)
+        self.serializer = WeekDataSerializer(location="london",weather_data=self.json["forecast"]["forecastday"])
 
 
     def data_by_days(self) -> dict:
@@ -47,23 +50,98 @@ class JsonFilter:
         temp_c_y_2 = []
 
 
+        will_it_rain_x = []
+        will_it_rain_y = []
+        will_it_rain_y_2 = []
+
+
+        chance_of_rain_x = []
+        chance_of_rain_y = []
+        chance_of_rain_y_2 = []
+
+
+        wind_kph_x = []
+        wind_kph_y = []
+        wind_kph_y_2 = []
+
+
+        feelslike_c_x = []
+        feelslike_c_y = []
+        feelslike_c_y_2 = []
+
         for hour in hourly_dict:
-            print(hour)
+
+            #temperature data by hours
+            temp_c_x.append(hour)
+            temp_c_y.append(hourly_dict[hour]["temp_c"])
+
+            #will it rain
+            will_it_rain_x.append(hour)
+            will_it_rain_y.append(hourly_dict[hour]["will_it_rain"])
+
+
+            #chance of rain
+            chance_of_rain_x.append(hour)
+            chance_of_rain_y.append(hourly_dict[hour]["chance_of_rain"])
+
+
+            #wind_kph_x
+            wind_kph_x.append(hour)
+            wind_kph_y.append(hourly_dict[hour]["wind_kph"])
+
+
+            # feels like 
+            feelslike_c_x.append(hour)
+            feelslike_c_y.append(hourly_dict[hour]["feelslike_c"])
 
 
 
-        #final data that will be served
+
+        #final temperature data that will be served
         temp_c = {
             "y":temp_c_y,
             "x":temp_c_x,
             "y_2":temp_c_y_2
 
         }
-        
-        return hourly_dict
+
+        will_it_rain = {
+            "y":will_it_rain_y,
+            "x":will_it_rain_x,
+            "y_2":will_it_rain_y_2
+
+        }
+
+        chance_of_rain = {
+            "y":chance_of_rain_y,
+            "x":chance_of_rain_x,
+            "y_2":chance_of_rain_y_2
+
+        }
+
+        wind_kph = {
+            "y":wind_kph_y,
+            "x":wind_kph_x,
+            "y_2":wind_kph_y_2
+
+        }
         
 
-test = JsonFilter()
+        feelslike_c = {
+            "y":feelslike_c_y,
+            "x":feelslike_c_x,
+            "y_2":feelslike_c_y_2
+
+        }
+
+
+        return temp_c,will_it_rain,chance_of_rain,wind_kph,feelslike_c
+    
+        
+
+# test = JsonFilter(json_data=json_data)
+# data = test.specific_day_data("2023-12-31")
+# print(data[0],data[1],data[2],data[3])
 
 
 class ApiCaller:
@@ -91,13 +169,14 @@ class ApiCaller:
 
     def weather_default(self,start_date:str="2024-01-01"):
         # end_date = str(date.today())
-        get_query = f"{self.uri}?key={self.key}&q=Israel&dt={start_date}"
+        get_query = f"{self.uri}/history.json?key={self.key}&q=Israel&dt={start_date}"
         api_request = requests.get(get_query)
         return api_request.json()
     
 
     #the default method that called first time 
     def weather_by_range(self,request_data:dict):
+
         #this validates that the user not spamming api requests too many times
         if self.queue_micro_service():
             basic_keys = ["start_date","end_date","ip"]
@@ -111,8 +190,11 @@ class ApiCaller:
             end_date = request_data["end_date"]
             user_ip = request_data["ip"]
 
-            get_query = f"{self.uri}?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
+            get_query = f"{self.uri}/history.json?key={self.key}&q={user_ip}&dt={start_date}"
+
+
             api_request = requests.get(get_query)
+            
             return api_request.json()
 
 

@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block title %}home page{% endblock title %}
 {% block content %}
+{% for graph in content %}
+{{ content[graph]|safe }}
+{% endfor %}
 {{graph_html}}
 
 {% endblock content %}

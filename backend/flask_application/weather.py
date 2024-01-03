@@ -17,13 +17,13 @@ load_dotenv(dotenv_path=CURR_DIR+"/configuration/.env")
 #! TESTING ONLY
 #! testing only
 #mock data that used to have json data to use
-json_filter_class = None
-mock_data = None
-#*this created to work with JsonFilter class
-with open(CURR_DIR+"/api_application/mock_data.json","r") as json_file:
-    json_data = json.load(json_file)
-    json_filter_class = JsonFilter(json_data=json_data)
-    mock_data = json_filter_class.specific_day_data(date="2024-01-01")
+# json_filter_class = None
+# mock_data = None
+# #*this created to work with JsonFilter class
+# with open(CURR_DIR+"/api_application/mock_data.json","r") as json_file:
+#     json_data = json.load(json_file)
+#     json_filter_class = JsonFilter(json_data=json_data)
+#     mock_data = json_filter_class.specific_day_data(date="2024-01-01")
 
 # print(mock_data)
 
@@ -44,7 +44,7 @@ app.secret_key = os.getenv('SECRET_FLASK_KEY')
 
 #class instances for api,db,html representation
 redis_client = RedisConnector(host=host_uri,port=port,username=username,password=password)
-api_connector = ApiCaller(uri=api_uri,api_key=api_key,source="no source")
+api_connector = ApiCaller(uri=api_uri,api_key=api_key,source="weather_api")
 graph_repr = GraphRepresantation()
 
 
@@ -64,8 +64,8 @@ def home_page():
     else:
         #* need to add start as today end as future by week
         #default values
-        start = "2024-01-01"
-        end = "2024-01-01"
+        start = "2024-01-04"
+        end = "2024-01-05"
         ip = request.remote_addr
         sorted_by = "daily"
 
@@ -73,8 +73,7 @@ def home_page():
         cleaned_data = {
             "start_date":start,
             "end_date":end,
-            "ip":ip,
-            "sorted_by":sorted_by
+            "ip":"8.8.8.8",
         }
 
         #querying the api and saving the response json
@@ -102,20 +101,43 @@ def weather_info():
     if found_key:
         required_data = redis_client.get(key=request.remote_addr)#TODO add values arg for quering specific data
 
-        #data structure for saving the data for later usage
-        dict_values = {}
-        x = []
-        y = []
+        #if the weather repr is week so it will represent it as a week
+        if required_data["weather_repr"] == "week":
+            #the data structured in a way that the graph_html can proccess it
+            temp_c = required_data["content_data"][0]
+            will_it_rain = required_data["content_data"][1]
+            chance_of_rain = required_data["content_data"][2]
+            wind_kph = required_data["content_data"][3]
+            feelslike_c = required_data["content_data"][4]
 
-        for time in required_data["user_data"]:
-            
-            x.append(time)
-            y.append(int(required_data["user_data"][time]["temp_c"]))
 
-        dict_values= {"x":x,"y":y,"y_2":[]}
-        graph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=dict_values,graph_repr="1_row",path="")
 
-        return render_template("weather.html",content={"required_data":required_data})
+            # graph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=dict_values,graph_repr="1_row",path="")
+            temp_c_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=temp_c,graph_repr="1_row",path="")
+            will_it_rain_html= graph_repr.graph_options(graph_type="bar_graph",dict_values=will_it_rain,graph_repr="1_row",path="")
+            chance_of_rain_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=chance_of_rain,graph_repr="1_row",path="")
+            wind_kph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=wind_kph,graph_repr="1_row",path="")
+            feelslike_c_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=feelslike_c,graph_repr="1_row",path="")
+
+            weather_graph = {
+                "temp_c_html":temp_c_html,
+                "will_it_rain_html":will_it_rain_html,
+                "chance_of_rain_html":chance_of_rain_html,
+                "wind_kph_html":wind_kph_html,
+                "feelslike_c_html":feelslike_c_html
+            }
+
+
+
+            return render_template("weather.html",content=weather_graph)
+
+
+
+        #it will represent it as a day 
+        elif required_data["weather_repr"] == "day":
+            pass
+        
+
 
         # return render_template("weather.html",content=f"user already exists{user_ip}")
         #if the key not exists then creating one with the default TTL 

@@ -38,7 +38,7 @@ class RedisConnector:
       #handles that the bool is inapropriate
       return ValueError("the user is already have record and replace set to false")
 
-
+    value["weather_repr"] = "week"
     #saving the wanted data in the redis database
     self.collection.json().set(key,Path.root_path(),value)
     #creating expiration date for the key

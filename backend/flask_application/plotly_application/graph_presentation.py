@@ -294,7 +294,7 @@ class GraphRepresantation(object):
               raise ValueError("x/y/y_2 value types are invalid")
 
             #check the y type
-            if not isinstance(dict_values["y"][index],int):
+            if not isinstance(dict_values["y"][index],(int,float)):
                 raise ValueError("x/y/y_2 value types are invalid")
             
             #check if the y_2 compare is existing
