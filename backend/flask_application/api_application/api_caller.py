@@ -2,12 +2,20 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os,json
 import requests
-from settings import BASE_URI,HISTORY,Q,START_DATE,END_DATE,KEY
 from datetime import date
-from serializer import WeekDataSerializer
-
-
+from .serializer import WeekDataSerializer
 load_dotenv()
+
+
+
+mock_data = None
+#*this created to work with JsonFilter class
+with open("mock_data.json","r") as json_file:
+    json_data = json.load(json_file)
+
+
+
+
 
 class JsonFilter:
     def __init__(self,json_data) -> None:
@@ -33,14 +41,29 @@ class JsonFilter:
                 # "wind_dir" :items["SE"],
                 }
 
+        #first temp_c datastructure
+        temp_c_y = []
+        temp_c_x = []
+        temp_c_y_2 = []
+
+
+        for hour in hourly_dict:
+            print(hour)
+
+
+
+        #final data that will be served
+        temp_c = {
+            "y":temp_c_y,
+            "x":temp_c_x,
+            "y_2":temp_c_y_2
+
+        }
+        
         return hourly_dict
-    
+        
 
-
-    
-
-
-
+test = JsonFilter()
 
 
 class ApiCaller:
@@ -66,10 +89,9 @@ class ApiCaller:
         return True
 
 
-    def weather_default(self):
-        start_date = "2024-01-01"
+    def weather_default(self,start_date:str="2024-01-01"):
         # end_date = str(date.today())
-        get_query = f"{self.uri+KEY+self.key}&q=Israel{START_DATE+start_date}"
+        get_query = f"{self.uri}?key={self.key}&q=Israel&dt={start_date}"
         api_request = requests.get(get_query)
         return api_request.json()
     
@@ -88,17 +110,13 @@ class ApiCaller:
             start_date = request_data["start_date"]
             end_date = request_data["end_date"]
             user_ip = request_data["ip"]
-            get_query = f"{self.uri+KEY+self.key}&q={user_ip}{START_DATE+start_date}{END_DATE+end_date}"
+
+            get_query = f"{self.uri}?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
             api_request = requests.get(get_query)
             return api_request.json()
 
 
-
-if __name__ == "__main__":
-    api_key = os.getenv("API_KEY")
-    ip = os.getenv("IP")
-    data = {"ip":ip,"start_date":"2023-12-26","end_date":"2024-01-01"}
-    source = "weatherapi.com"
+        
 
 
     #*this was for testing the methods and succesfully created
@@ -112,14 +130,18 @@ if __name__ == "__main__":
     #     print(get_weather)
 
     
-    #*this created to work with JsonFilter class
-    with open("mock_data.json","r") as json_file:
-        json_data = json.load(json_file)
-        json_filter_class = JsonFilter(json_data=json_data)
-        result = json_filter_class.specific_day_data(date="2024-01-01")
-        print(result)
-        # result = json_filter_class.data_by_days()
-        # json_filter_class.hourly_data()
-        # print(result["2024-01-01"])
+
+
+# #! testing only
+# #*this created to work with JsonFilter class
+# with open("mock_data.json","r") as json_file:
+#     json_data = json.load(json_file)
+#     json_filter_class = JsonFilter(json_data=json_data)
+#     result = json_filter_class.specific_day_data(date="2024-01-01")
+#     # print(result)
+    # result = json_filter_class.data_by_days()
+    # json_filter_class.hourly_data()
+    # print(result["2024-01-01"])
     
+
 
