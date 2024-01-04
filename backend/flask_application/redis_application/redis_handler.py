@@ -1,8 +1,9 @@
 import redis,json,os
 from dotenv import load_dotenv
 from redis.commands.json.path import Path
-
 load_dotenv(dotenv_path="backend/api_application/.env")
+
+
 
 class RedisConnector:
   """"
@@ -13,11 +14,12 @@ class RedisConnector:
   def __init__(self,host,port,username,password):
     self.collection = redis.Redis(host=host,port=port,username=username,password=password)
 
+
   def register_ip(self):
     pass
 
 
-  def set_key(self,key:str,value:dict,replace:bool=False,TTL:int=3600) -> bool:
+  def set_key(self,key:str,value:dict,replace:bool=False,TTL:int=3600,timer:int=0) -> bool:
     """
     setting the key in the redis database
 
@@ -28,6 +30,16 @@ class RedisConnector:
       replace(bool=False):if true it will replace the existing data
       TTL(int=3600):time to live and its the timer that the key will be destroyed after the time expires
     """
+    if timer:
+      #saving the wanted data in the redis database
+      self.collection.json().set(key,Path.root_path(),value)
+      #creating expiration date for the key
+      self.collection.expire(key,TTL)
+
+      self.collection.set(key+"_api","api_ttl")
+      self.collection.expire(key+"_api",timer)
+      #returns True that the key is created
+      return True
     
     #check if the key exists
     if self.exists(key=key):
@@ -46,8 +58,7 @@ class RedisConnector:
     return True
   
 
-
-  def get(self,key:str,specific_value:str=None) -> bool:
+  def get(self,key:str,specific_value:str=False) -> bool:
     """
     this get method is similar to redis.get method but returns false if data not found
 
@@ -66,13 +77,13 @@ class RedisConnector:
 
     #if specific values not passed
     result = self.collection.json().get(key)
+
     
     #checkinf if anything is found
     if result == None:
       return False
     return result
   
-
 
   def exists(self,key:str) -> bool:
     """
@@ -87,11 +98,22 @@ class RedisConnector:
     return False
     # return result
 
+
+  def check_timer(self,key:str):
+    key_exists = self.collection.exists(key+"_api")
+
+    if key_exists:
+      return True
+    
+    return False
+
+
   def clear_all(self,ip:str):
     """
     this method is specific for testing and it deletes the specified key
     """
     self.collection.delete(ip)
+
 
 
 

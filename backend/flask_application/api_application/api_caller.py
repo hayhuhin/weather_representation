@@ -3,7 +3,7 @@ from pathlib import Path
 import os,json
 import requests
 from datetime import date
-from serializer import WeekDataSerializer
+from .serializer import WeekDataSerializer
 load_dotenv()
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -46,7 +46,7 @@ class JsonFilter:
                 "avgtemp_c":data["day"]["avgtemp_c"],
                 "daily_will_it_rain":data["day"]["daily_will_it_rain"],
                 "daily_chance_of_rain":data["day"]["daily_chance_of_rain"],
-                }
+            }
 
         return filtered_data
 
@@ -193,14 +193,16 @@ class ApiCaller:
         this will validate that the user not sending infinite times api calls  
         """
         #! for now returns always True
+        print("api called")
         return True
 
 
     def weather_default(self,start_date:str="2024-01-01"):
-        # end_date = str(date.today())
-        get_query = f"{self.uri}/history.json?key={self.key}&q=Israel&dt={start_date}"
-        api_request = requests.get(get_query)
-        return api_request.json()
+        if self.queue_micro_service:
+            # end_date = str(date.today())
+            get_query = f"{self.uri}/history.json?key={self.key}&q=Israel&dt={start_date}"
+            api_request = requests.get(get_query)
+            return api_request.json()
     
 
     #the default method that called first time 
@@ -219,15 +221,12 @@ class ApiCaller:
             end_date = request_data["end_date"]
             user_ip = request_data["ip"]
 
-            get_query = f"{self.uri}/history.json?key={self.key}&q={user_ip}&dt={start_date}"
-
+            get_query = f"{self.uri}/history.json?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
 
             api_request = requests.get(get_query)
             
             return api_request.json()
 
-
-        
 
 
     #*this was for testing the methods and succesfully created

@@ -1,8 +1,51 @@
 {% extends "base.html" %}
 {% block title %}home page{% endblock title %}
 {% block content %}
-{% for graph in content %}
-{{ content[graph]|safe }}
-{% endfor %}
+
+
+
+<div class="container">
+{% if content.weather_day_graph %}
+    {% for graph in content.weather_day_graph %}
+        <h1>{{ content.weather_day_graph[graph]|safe }}</h1>
+    {% endfor %}
+{% endif %}
+
+{% if content.week_data %}
+    {% for graph in content.week_data %}
+        <h1>{{ content.week_data[graph] }}</h1>
+    {% endfor %}
+{% endif %}
+</div>
+
+<!-- testing for now -->
+
+
+
+
+
+
+
+
+
+<form method="POST">
+<button type="submit" id="display_id" name="change_display" value="change_display">change display</button>
+</form>
 
 {% endblock content %}
+
+{% block content_2 %}
+<div class="container">
+    {% for graph in content.weather_day_graph %}
+    <div class="card" style="width: 18rem;">
+        <img src="..." class="card-img-top" alt="...">
+        <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock content_2 %}
