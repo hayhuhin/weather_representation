@@ -32,7 +32,14 @@ class OpenMeteoApi:
 
 
 	def get_daily_json(self):
-		hourly = self.response.Hourly()
+		edited_params = {
+			"hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
+			"daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
+			"forecast_days":1,
+							}
+		hourly_responses = openmeteo.weather_api(self.uri,edited_params)
+
+		hourly = hourly_responses.Hourly()
 		hourly_precipitation_probability = hourly.Variables(0).ValuesAsNumpy()
 		hourly_apparent_temperature = hourly.Variables(1).ValuesAsNumpy()
 		hourly_rain = hourly.Variables(2).ValuesAsNumpy()
@@ -87,6 +94,7 @@ class OpenMeteoApi:
 
 		daily_dataframe = pd.DataFrame(data = daily_data)
 		print("daily",daily_dataframe)
+		return daily_dataframe
 
 
 
@@ -113,10 +121,11 @@ API_2_PARAMS = {
 
 
 test_class = OpenMeteoApi(uri=API_2_CONFIG["uri"],params=API_2_PARAMS)
-daily_data = test_class.get_week_json()
+daily_data = test_class.get_daily_json()
 
 
-
+for items in daily_data:
+	print(daily_data[items])
 
 
 
