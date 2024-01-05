@@ -41,6 +41,7 @@ class JsonFilter:
         days_dict = self.data_by_days()
         hourly_dict = {}
         for items in days_dict[date]["hourly_data"]:
+            print(type(items))
             hourly_dict[items["time"]] = {
                 "will_it_rain" :items["will_it_rain"],
                 "chance_of_rain" :items["chance_of_rain"],

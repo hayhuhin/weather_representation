@@ -118,6 +118,7 @@ class ControllerClass:
             # return weather_day_graph
         
 
+    #TODO add the option to change the graph repr from line to bar graph
     def day_view(self,required_data) -> str:
         # required_data = self.redis.get(key=self.ip)
 
