@@ -7,7 +7,13 @@
 <div class="container">
 {% if content.weather_day_graph %}
     {% for graph in content.weather_day_graph %}
-        <h1>{{ content.weather_day_graph[graph]|safe }}</h1>
+        <h3>{{content.weather_day_graph[graph].data.name}}</h3>
+        <p>{{content.weather_day_graph[graph].data.appearance[0]}}</p>
+        <p>{{content.weather_day_graph[graph].data.appearance[1]}}</p>
+
+        {{ content.weather_day_graph[graph].html|safe }}
+
+
     {% endfor %}
 {% endif %}
 

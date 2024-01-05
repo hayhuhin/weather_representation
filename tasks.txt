@@ -3,3 +3,17 @@
         get weather by location by day represent temp by {{time}},rain persentage by {{time}}
 2.create application that saves the api called info 
 
+
+first add the second api 
+
+
+
+get the highest temp + hour + of each source
+get the lowest temp + hour + of each source
+
+get the highest persentage of will it rain + hour + of each source
+get the lowest persentage of will it rain + hour + of each source
+
+get the most highest wind kph + hour + of each source
+get the most lowest wind kph + hour + of each source
+
