@@ -159,7 +159,7 @@ class WeatherApi:
 
 
 class OpenMeteoApi:
-    def __init__(self,uri:str,params:dict,user_ip) -> dict:
+    def __init__(self,uri:str) -> dict:
           
         """
         constructor method of the openmeteoapi class
@@ -185,42 +185,47 @@ class OpenMeteoApi:
         
         
         self.uri = uri
-        self.params = params
+        # self.params = params
         self.cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
         self.retry_session = retry(self.cache_session, retries = 5, backoff_factor = 0.2)
         self.openmeteo = openmeteo_requests.Client(session = self.retry_session)
-        self.response = self.api_response()
+        # self.response = self.api_response()
 
 
 
-    def get_user_location_by_ip(self,user_ip):
-        lan_lat = get_ip_from_api(user_ip)
+    # def get_user_location_by_ip(self,user_ip):
+    #     lan_lat = get_ip_from_api(user_ip)
 
-        return 
-    def json_filter_by_day(self,dataframe:pd.DataFrame,specific_date:str) -> dict:
-        """
-        this method getting a dataframe data and then filtering it to return specific data by the specific day
+    #     return 
+    # def json_filter_by_day(self,dataframe:pd.DataFrame,specific_date:str) -> dict:
+    #     """
+    #     this method getting a dataframe data and then filtering it to return specific data by the specific day
 
-        Args:
-            dataframe(pd.dataframe):
-                large dataframe data that we will need to extract specific date from it 
-            specific_date(str):
-                this is the targeted date that we will need to extract from the dataframe
+    #     Args:
+    #         dataframe(pd.dataframe):
+    #             large dataframe data that we will need to extract specific date from it 
+    #         specific_date(str):
+    #             this is the targeted date that we will need to extract from the dataframe
 
-        Returns:
-            json data of the specific date
-        """
-        pass
+    #     Returns:
+    #         json data of the specific date
+    #     """
+    #     pass
 
 
 
-    def api_response(self) -> pd.DataFrame :
+    # def api_response(self) -> pd.DataFrame :
         
-        responses = self.openmeteo.weather_api(self.uri, params=self.params)
-        return responses[0]
+    #     responses = self.openmeteo.weather_api(self.uri, params=self.params)
+    #     return responses[0]
+
+    def queue_micro_service(self):
+        print("api called")
+        return True
 
 
-    def get_daily_json(self):
+
+    def get_daily_json(self,params):
         """
         this method queries the database and returns the daily json that have a large data of each hour from the range od dates
 
@@ -228,75 +233,81 @@ class OpenMeteoApi:
             api dataframe
         """
 
-        hourly = self.response.Hourly()
-        hourly_precipitation_probability = hourly.Variables(0).ValuesAsNumpy()
-        hourly_apparent_temperature = hourly.Variables(1).ValuesAsNumpy()
-        hourly_rain = hourly.Variables(2).ValuesAsNumpy()
-        hourly_wind_speed_10m = hourly.Variables(3).ValuesAsNumpy()
-        hourly_temperature_2m = hourly.Variables(4).ValuesAsNumpy()
+        if self.queue_micro_service():
+            response = self.openmeteo.weather_api(self.uri, params=params)[0]
 
-        hourly_data = {"date": pd.date_range(
-        start = pd.to_datetime(hourly.Time(), unit = "s"),
-        end = pd.to_datetime(hourly.TimeEnd(), unit = "s"),
-        freq = pd.Timedelta(seconds = hourly.Interval()),
-        inclusive = "left"
-        )}
-        hourly_data["precipitation_probability"] = hourly_precipitation_probability
-        hourly_data["rain"] = hourly_rain
-        hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
-        hourly_data["temperature_2m"] = hourly_temperature_2m
-        hourly_data["feelslike_c"] = hourly_apparent_temperature
+            hourly = response.Hourly()
+            hourly_precipitation_probability = hourly.Variables(0).ValuesAsNumpy()
+            hourly_apparent_temperature = hourly.Variables(1).ValuesAsNumpy()
+            hourly_rain = hourly.Variables(2).ValuesAsNumpy()
+            hourly_wind_speed_10m = hourly.Variables(3).ValuesAsNumpy()
+            hourly_temperature_2m = hourly.Variables(4).ValuesAsNumpy()
+
+            hourly_data = {"date": pd.date_range(
+            start = pd.to_datetime(hourly.Time(), unit = "s"),
+            end = pd.to_datetime(hourly.TimeEnd(), unit = "s"),
+            freq = pd.Timedelta(seconds = hourly.Interval()),
+            inclusive = "left"
+            )}
+            hourly_data["precipitation_probability"] = hourly_precipitation_probability
+            hourly_data["rain"] = hourly_rain
+            hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
+            hourly_data["temperature_2m"] = hourly_temperature_2m
+            hourly_data["feelslike_c"] = hourly_apparent_temperature
 
 
-        hourly_dataframe = pd.DataFrame(data = hourly_data)
-        return hourly_dataframe
+            hourly_dataframe = pd.DataFrame(data = hourly_data)
+            return hourly_dataframe
 
 
-    def get_week_json(self) -> pd.DataFrame:
+    def get_week_json(self,params) -> pd.DataFrame:
         """
         this method gets the dayly general data from the specific week
 
         Returns:
             dataframe of the api responsed json
         """
+        if self.queue_micro_service():
 
-        # Process daily data. The order of variables needs to be the same as requested.
-        daily = self.response.Daily()
-        daily_temperature_2m_max = daily.Variables(0).ValuesAsNumpy()
-        daily_temperature_2m_min = daily.Variables(1).ValuesAsNumpy()
-        daily_showers_sum = daily.Variables(2).ValuesAsNumpy()
-        daily_precipitation_probability_max = daily.Variables(3).ValuesAsNumpy()
-        daily_precipitation_probability_min = daily.Variables(4).ValuesAsNumpy()
-        daily_precipitation_hours = daily.Variables(5).ValuesAsNumpy()
-        daily_wind_speed_10m_max = daily.Variables(6).ValuesAsNumpy()
+            response = self.openmeteo.weather_api(self.uri, params=params)[0]
 
-
-        daily_data = {"date": pd.date_range(
-            start = pd.to_datetime(daily.Time(), unit = "s"),
-            end = pd.to_datetime(daily.TimeEnd(), unit = "s"),
-            freq = pd.Timedelta(seconds = daily.Interval()),
-            inclusive = "left"
-        )}
-
-        daily_data["temperature_2m_max"] = daily_temperature_2m_max
-        daily_data["temperature_2m_min"] = daily_temperature_2m_min
-        daily_data["showers_sum"] = daily_showers_sum
-        daily_data["precipitation_probability_max"] = daily_precipitation_probability_max
-        daily_data["precipitation_probability_min"] = daily_precipitation_probability_min
-        daily_data["precipitation_hours"] = daily_precipitation_hours
-        daily_data["wind_speed_10m_max"] = daily_wind_speed_10m_max
+            # Process daily data. The order of variables needs to be the same as requested.
+            daily = response.Daily()
+            daily_temperature_2m_max = daily.Variables(0).ValuesAsNumpy()
+            daily_temperature_2m_min = daily.Variables(1).ValuesAsNumpy()
+            daily_showers_sum = daily.Variables(2).ValuesAsNumpy()
+            daily_precipitation_probability_max = daily.Variables(3).ValuesAsNumpy()
+            daily_precipitation_probability_min = daily.Variables(4).ValuesAsNumpy()
+            daily_precipitation_hours = daily.Variables(5).ValuesAsNumpy()
+            daily_wind_speed_10m_max = daily.Variables(6).ValuesAsNumpy()
 
 
-        daily_dataframe = pd.DataFrame(data = daily_data)
-        return daily_dataframe
+            daily_data = {"date": pd.date_range(
+                start = pd.to_datetime(daily.Time(), unit = "s"),
+                end = pd.to_datetime(daily.TimeEnd(), unit = "s"),
+                freq = pd.Timedelta(seconds = daily.Interval()),
+                inclusive = "left"
+            )}
+
+            daily_data["temperature_2m_max"] = daily_temperature_2m_max
+            daily_data["temperature_2m_min"] = daily_temperature_2m_min
+            daily_data["showers_sum"] = daily_showers_sum
+            daily_data["precipitation_probability_max"] = daily_precipitation_probability_max
+            daily_data["precipitation_probability_min"] = daily_precipitation_probability_min
+            daily_data["precipitation_hours"] = daily_precipitation_hours
+            daily_data["wind_speed_10m_max"] = daily_wind_speed_10m_max
+
+
+            daily_dataframe = pd.DataFrame(data = daily_data)
+            return daily_dataframe
 
 
 
 class ApiController:
     def __init__(self,openmateo_config,weatherapi_config):
 
-        self.openmateo_class = OpenMeteoApi(uri=openmateo_config["uri"],params=openmateo_config["params"],user_lat_lan=openmateo_config["user_lat_lan"])
-        self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["api_key"],user_lat_lan=weatherapi_config["test_mode"])
+        self.openmateo_class = OpenMeteoApi(uri=openmateo_config["uri"])
+        self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["api_key"],test_mode=weatherapi_config["test_mode"])
 
     
     def day_data(self,start_date:str) -> dict:
@@ -338,6 +349,5 @@ class ApiController:
         weather_week_data = {"weatherapi":weather_api_data,"openmateo":openmateo_api_data}
     
         return weather_week_data 
-
 
 
