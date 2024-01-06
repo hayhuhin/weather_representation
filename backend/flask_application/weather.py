@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.secret_key = SECRET_FLASK_KEY
 
 
+
 controller = ControllerClass(redis_config=REDIS_CONFIG,api_1_config=API_1_CONFIG,test_mode=True)
 
 week_dates =  Time().week_reversed()

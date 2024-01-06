@@ -6,9 +6,9 @@ from api_application.graph_module import GraphRepresantation
 from config import CURR_DIR,SECRET_FLASK_KEY,HOST_URI,REDIS_PORT,REDIS_USERNAME,REDIS_PASSWORD,WEATHERAPI_API_KEY,WEATHERAPI_API_URI
 
 
-# redis_client = RedisConnector(host=HOST_URI,port=REDIS_PORT,username=REDIS_USERNAME,password=REDIS_PASSWORD)
-api_connector = ApiCaller(uri=WEATHERAPI_API_URI,api_key=WEATHERAPI_API_KEY,source="weather_api")
-graph_repr = GraphRepresantation()
+# # redis_client = RedisConnector(host=HOST_URI,port=REDIS_PORT,username=REDIS_USERNAME,password=REDIS_PASSWORD)
+# api_connector = ApiCaller(uri=WEATHERAPI_API_URI,api_key=WEATHERAPI_API_KEY,source="weather_api")
+# graph_repr = GraphRepresantation()
 
 
 
