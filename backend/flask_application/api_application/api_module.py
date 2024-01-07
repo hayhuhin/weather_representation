@@ -6,6 +6,7 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
+from .json_filter import JsonFilter
 
 
 
@@ -63,52 +64,50 @@ class WeatherApi:
 
         self.uri = uri
         self.key = api_key
-        # self.source = source
         self.test_mode = test_mode
+        
 
 
-    def queue_micro_service(self):
-        """
-        this method can have microservices that have to run before each api call.
-        for now it only prints that the api called
-        """
-        #! for now returns always True
-        print("api called")
-        return True
+
+    def weather_by_day(self,params:dict) -> dict:
 
 
-    def weather_default(self,start_date:str="2024-01-01") -> dict:
-        """
-        this method queries for a default data of a specific date and returns the data as a json.
 
-        Args:
-            start_date(str)="2024-01-01":
-                the api call will retrieve data of that specific date .
+        #* this is returning test data if the test_mode is True
+        if self.test_mode:
+            test_data = self.return_test_data()
 
-        Returns:
-            api json
-        """
-        if self.queue_micro_service:
-            # end_date = str(date.today())
-            get_query = f"{self.uri}/history.json?key={self.key}&q=Israel&dt={start_date}"
-            api_request = requests.get(get_query)
-            return api_request.json()
-    
-
-    def return_test_data(self) -> dict:
-        """
-        this method loading json moch data and returning it
-        most of the usage is for testing only
-
-        Returns:
-            json data
-        """
-        with open(CURR_DIR+"/test/mock_data.json","r") as json_file:
-            json_data = json.load(json_file)
-            return json_data
+            json_filter = JsonFilter(json_data=test_data)
+            filtered_data = json_filter.specific_day_data(date=params["start_date"])            
+            return filtered_data
 
 
-    def weather_by_range(self,request_data:dict) -> dict:
+        #* this is running before each api call
+        if self.queue_micro_service():
+
+            basic_keys = ["start_date","end_date","ip"]
+            for keys in basic_keys:
+                if keys not in params.keys():
+                    weather_default = self.weather_default()
+                    return weather_default
+
+
+            start_date = params["start_date"]
+            end_date = params["end_date"]
+            user_ip = params["ip"]
+
+            get_query = f"{self.uri}/history.json?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
+
+            api_request = requests.get(get_query).json()
+            json_filter = JsonFilter(json_data=api_request)
+
+            filtered_data = json_filter.specific_day_data(date=params["start_date"])
+            
+            return filtered_data
+
+
+
+    def weather_by_week(self,params:dict) -> dict:
         """
         this method is getting data from the api by the range of dates.
         if test_mode is True it will not query and return a mock json
@@ -127,39 +126,58 @@ class WeatherApi:
             api json data
         """
 
+
+
         #* this is returning test data if the test_mode is True
         if self.test_mode:
             test_data = self.return_test_data()
-            return test_data
+            json_filter = JsonFilter(json_data=test_data)
+            filtered_data = json_filter.specific_week_data(start_date=params["start_date"],end_date=params["end_date"])            
+            return filtered_data
+
 
         #* this is running before each api call
         if self.queue_micro_service():
 
-            basic_keys = ["start_date","end_date","ip"]
-            for keys in basic_keys:
-                if keys not in request_data.keys():
-                    weather_default = self.weather_default()
-                    return weather_default
-
-
-            start_date = request_data["start_date"]
-            end_date = request_data["end_date"]
-            user_ip = request_data["ip"]
+            start_date = params["start_date"]
+            end_date = params["end_date"]
+            user_ip = params["ip"]
 
             get_query = f"{self.uri}/history.json?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
-
-            api_request = requests.get(get_query)
+            api_request = requests.get(get_query).json()
+            json_filter = JsonFilter(json_data=api_request)
+            filtered_data = json_filter.specific_week_data(start_date=params["start_date"],end_date=params["end_date"])
+            return filtered_data
             
-            return api_request.json()
-            
 
 
-        # http://api.openweathermap.org/geo/1.0/direct?q={city name},{state code},{country code}&limit={limit}&appid={API key}
+    def queue_micro_service(self):
+        """
+        this method can have microservices that have to run before each api call.
+        for now it only prints that the api called
+        """
+        #! for now returns always True
+        print("api called")
+        return True
+
+
+
+    def return_test_data(self) -> dict:
+        """
+        this method loading json moch data and returning it
+        most of the usage is for testing only
+
+        Returns:
+            json data
+        """
+        with open(CURR_DIR+"/test/mock_data.json","r") as json_file:
+            json_data = json.load(json_file)
+            return json_data
 
 
 
 class OpenMeteoApi:
-    def __init__(self,uri:str) -> dict:
+    def __init__(self,uri:str,api_key:str="no key",test_mode:bool=False) -> dict:
           
         """
         constructor method of the openmeteoapi class
@@ -189,43 +207,25 @@ class OpenMeteoApi:
         self.cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
         self.retry_session = retry(self.cache_session, retries = 5, backoff_factor = 0.2)
         self.openmeteo = openmeteo_requests.Client(session = self.retry_session)
-        # self.response = self.api_response()
+        self.test_mode = test_mode
 
 
 
-    # def get_user_location_by_ip(self,user_ip):
-    #     lan_lat = get_ip_from_api(user_ip)
-
-    #     return 
-    # def json_filter_by_day(self,dataframe:pd.DataFrame,specific_date:str) -> dict:
-    #     """
-    #     this method getting a dataframe data and then filtering it to return specific data by the specific day
-
-    #     Args:
-    #         dataframe(pd.dataframe):
-    #             large dataframe data that we will need to extract specific date from it 
-    #         specific_date(str):
-    #             this is the targeted date that we will need to extract from the dataframe
-
-    #     Returns:
-    #         json data of the specific date
-    #     """
-    #     pass
-
-
-
-    # def api_response(self) -> pd.DataFrame :
-        
-    #     responses = self.openmeteo.weather_api(self.uri, params=self.params)
-    #     return responses[0]
 
     def queue_micro_service(self):
         print("api called")
         return True
 
 
+    def ip_translator(self,ip):
+        data = {"latitude": 32.028320,
+	            "longitude": 34.781879,}
 
-    def get_daily_json(self,params):
+        return data
+
+
+
+    def weather_by_day(self,params):
         """
         this method queries the database and returns the daily json that have a large data of each hour from the range od dates
 
@@ -233,8 +233,21 @@ class OpenMeteoApi:
             api dataframe
         """
 
+
+
         if self.queue_micro_service():
-            response = self.openmeteo.weather_api(self.uri, params=params)[0]
+
+
+            api_params = {
+            "hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
+            "daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
+            "forecast_days":1,
+            }
+
+            lan_lat = self.ip_translator(params["ip"])
+            api_params["longitude"] = lan_lat["longitude"]
+            api_params["latitude"] = lan_lat["latitude"]
+            response = self.openmeteo.weather_api(url=self.uri, params=api_params)[0]
 
             hourly = response.Hourly()
             hourly_precipitation_probability = hourly.Variables(0).ValuesAsNumpy()
@@ -249,18 +262,40 @@ class OpenMeteoApi:
             freq = pd.Timedelta(seconds = hourly.Interval()),
             inclusive = "left"
             )}
-            hourly_data["precipitation_probability"] = hourly_precipitation_probability
-            hourly_data["rain"] = hourly_rain
-            hourly_data["wind_speed_10m"] = hourly_wind_speed_10m
-            hourly_data["temperature_2m"] = hourly_temperature_2m
+            hourly_data["chance_of_rain"] = hourly_precipitation_probability
+            hourly_data["will_it_rain"] = hourly_rain
+            hourly_data["wind_kph"] = hourly_wind_speed_10m
+            hourly_data["temp_c"] = hourly_temperature_2m
             hourly_data["feelslike_c"] = hourly_apparent_temperature
 
+# df['date'] = pd.to_datetime(df['date'], unit='ms')
 
-            hourly_dataframe = pd.DataFrame(data = hourly_data)
-            return hourly_dataframe
+# Create a new DataFrame with the desired structure
 
 
-    def get_week_json(self,params) -> pd.DataFrame:
+
+
+            df = pd.DataFrame(data = hourly_data)
+
+            result_df = pd.DataFrame({
+                
+                    'temp_c': {'y': df['temp_c'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []},
+                    'will_it_rain': {'y': df['will_it_rain'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []},
+                    'chance_of_rain': {'y': df['chance_of_rain'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []},
+                    'wind_kph': {'y': df['wind_kph'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []},
+                    'feelslike_c': {'y': df['feelslike_c'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []}
+                ,
+            })
+
+            # print(hourly_dataframe.to_json())for i in 
+            json_result = result_df.to_json()
+
+            return json_result
+
+
+
+
+    def weather_by_week(self,params) -> pd.DataFrame:
         """
         this method gets the dayly general data from the specific week
 
@@ -269,7 +304,18 @@ class OpenMeteoApi:
         """
         if self.queue_micro_service():
 
-            response = self.openmeteo.weather_api(self.uri, params=params)[0]
+
+            api_params = {
+            "past_days":7,
+            "hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
+            "daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
+            "forecast_days":1,
+            }
+            lan_lat = self.ip_translator(params["ip"])
+            api_params["longitude"] = lan_lat["longitude"]
+            api_params["latitude"] = lan_lat["latitude"]
+
+            response = self.openmeteo.weather_api(self.uri, params=api_params)[0]
 
             # Process daily data. The order of variables needs to be the same as requested.
             daily = response.Daily()
@@ -289,28 +335,29 @@ class OpenMeteoApi:
                 inclusive = "left"
             )}
 
-            daily_data["temperature_2m_max"] = daily_temperature_2m_max
-            daily_data["temperature_2m_min"] = daily_temperature_2m_min
-            daily_data["showers_sum"] = daily_showers_sum
-            daily_data["precipitation_probability_max"] = daily_precipitation_probability_max
-            daily_data["precipitation_probability_min"] = daily_precipitation_probability_min
-            daily_data["precipitation_hours"] = daily_precipitation_hours
-            daily_data["wind_speed_10m_max"] = daily_wind_speed_10m_max
-
-
+            daily_data["temp_c"] = daily_temperature_2m_max
+            # daily_data["temperature_2m_min"] = daily_temperature_2m_min
+            daily_data["will_it_rain"] = daily_showers_sum
+            daily_data["chance_of_rain"] = daily_precipitation_probability_max
+            # daily_data["precipitation_probability_min"] = daily_precipitation_probability_min
+            daily_data["feelslike_c"] = daily_precipitation_hours
+            daily_data["wind_kph"] = daily_wind_speed_10m_max
             daily_dataframe = pd.DataFrame(data = daily_data)
+
+
             return daily_dataframe
 
 
 
+
 class ApiController:
-    def __init__(self,openmateo_config,weatherapi_config):
+    def __init__(self,openmateo_config,weatherapi_config,test_mode:bool):
 
         self.openmateo_class = OpenMeteoApi(uri=openmateo_config["uri"])
-        self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["api_key"],test_mode=weatherapi_config["test_mode"])
+        self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["key"],test_mode=test_mode)
 
     
-    def day_data(self,start_date:str) -> dict:
+    def day_data(self,params:dict) -> dict:
         """
         this method getting the data of the both apis as a dict where the keys are the name of the api and the values is the api json data
 
@@ -320,15 +367,18 @@ class ApiController:
         Returns:
             dict when the keys are the api names and the value is the api response of each api
         """
+
+        #TODO getting the latitude and langtitude of an ip address
         
-        weather_api_data = self.weatherapi_class.weather_default(start_date=start_date)
-        openmateo_data = self.openmateo_class.get_daily_json()
+        weather_api_data = self.weatherapi_class.weather_by_day(params=params)
+        openmateo_data = self.openmateo_class.weather_by_day(params=params)
+
         weather_day_data = {"weatherapi":weather_api_data,"openmateo":openmateo_data}
         
-        return weather_day_data 
+        return weather_day_data
 
 
-    def week_data(self,start_date:str,end_date:str,ip:str) -> dict:
+    def week_data(self,params:dict) -> dict:
         """
         this method getting the data of the both apis as a dict where the keys are the name of the api and the values is the api json data
 
@@ -344,10 +394,90 @@ class ApiController:
             dict of the json data
         """
 
-        weather_api_data = self.weatherapi_class.weather_by_range(request_data={"start_date":start_date,"end_date":end_date,"ip":ip})
-        openmateo_api_data = self.openmateo_class.get_week_json()
+        weather_api_data = self.weatherapi_class.weather_by_week(params=params)
+        openmateo_api_data = self.openmateo_class.weather_by_week(params=params)
         weather_week_data = {"weatherapi":weather_api_data,"openmateo":openmateo_api_data}
     
         return weather_week_data 
 
 
+
+
+#*checking the weatherapi methods and all is good
+# WEATHERAPI_API_URI = "http://api.weatherapi.com/v1"
+# WEATHERAPI_API_KEY = "d3fd130224194172b95202121240101"
+# WEATHERAPI_NAME = "weatherapi.com"
+# test = WeatherApi(uri=WEATHERAPI_API_URI,api_key="",test_mode=True)
+
+
+# requested_data = {
+#     "start_date":"2024-01-01",
+#     "end_date":"2023-12-27",
+#     "ip":"8.8.8.8",
+# }
+
+
+
+# data = test.weather_by_day(request_data=requested_data)
+
+
+#*checking the openmeteo api 
+OPENMETEO_URI = "https://api.open-meteo.com/v1/forecast"
+OPENMETEO_KEY = "no key"
+OPENMETEO_SOURCE = "openmateo_api"
+
+
+
+
+# day_params = {
+# 	"hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
+# 	"daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
+# 	"forecast_days":1,
+# }
+
+# week_params = {
+#     "past_days":7,
+#     "hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
+# 	"daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
+# 	"forecast_days":1,
+# }
+
+
+
+
+
+#! will be used later in the production website
+OPENMETEO_URI = "https://api.open-meteo.com/v1/forecast"
+OPENMETEO_KEY = "no key"
+OPENMETEO_SOURCE = "openmateo_api"
+
+WEATHERAPI_API_URI = "http://api.weatherapi.com/v1"
+WEATHERAPI_API_KEY = "d3fd130224194172b95202121240101"
+WEATHERAPI_NAME = "weatherapi.com"
+
+
+OPENMATEO_API_CONFIG = {
+    "uri":OPENMETEO_URI,
+    "api_key":OPENMETEO_KEY,
+    "source":OPENMETEO_SOURCE,
+}
+
+WEATHERAPI_API_CONFIG = {
+        "uri":WEATHERAPI_API_URI,
+        "api_key":WEATHERAPI_API_KEY,
+        "source":WEATHERAPI_NAME,
+        "test_mode":True
+}
+
+
+
+# test_class = ApiController(openmateo_config=OPENMATEO_API_CONFIG,weatherapi_config=WEATHERAPI_API_CONFIG)
+# basic_data = {
+#     "start_date":"2024-01-01",
+#     "end_date":"2023-12-26",
+#     "ip":"8.8.8.8"
+# }
+# day_data = test_class.day_data(params=basic_data)
+# week_data = test_class.week_data(params=basic_data)
+
+#! will be used later in the production website
