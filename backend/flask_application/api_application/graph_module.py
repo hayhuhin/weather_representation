@@ -143,7 +143,7 @@ class GraphRepresantation(object):
                   x=dict_values["x"],
                   y=[dict_values["y"], dict_values["y_2"]],
                   labels={'value': 'Income', 'x':'Date','variable': 'amount'},
-                  title=f"blue is {dict_values['DB_1']} orange is {dict_values['DB_2']}",
+                  title=f"blue-{dict_values['DB_1']} orange-{dict_values['DB_2']}",
                   color_discrete_sequence=['blue', 'orange'],  # Set custom colors
                   template=self.template,
               )
@@ -222,13 +222,27 @@ class GraphRepresantation(object):
             group = dict_values["x"]
 
             line_fig = px.line(
-                x=group,
                 y=[values_1, values_2],
-                labels={'value': 'Income', 'x':'Date',},
-                  title=f"blue is {dict_values['DB_1']} orange is {dict_values['DB_2']}",
+                x=dict_values["x"],
+                labels={'value': 'values', 'x':'hour',},
+                title=f"*blue-{dict_values['DB_1']} *orange-{dict_values['DB_2']}",
                 color_discrete_sequence=['blue', 'orange'],  # Set custom colors
                 template=self.template,
+                markers=True
             )
+
+            # line_fig.add_annotation(ax=group, ay=values_1,
+            #             text=str("ss"),
+            #             # showarrow=True,
+            #             # arrowhead=1)
+            # )
+            # line_fig.add_annotation(ax=group, ay=values_2,
+            #             text=str("values_2")
+            #             # showarrow=False,
+            #             # yshift=10)
+            # )
+
+
 
             # fig.update_layout(barmode='group')
             # graph_fig = px.bar(data_frame,x='group',y='value',template=self.template)
@@ -239,16 +253,19 @@ class GraphRepresantation(object):
                                     bargap=0.2,
                                     bargroupgap=0.2,
                                     width=x_size,
-                                    height=y_size
+                                    height=y_size,
                                     )
 
 
-            line_fig.update_traces(textfont_size=12)
+            line_fig.update_traces(textfont_size=12,mode="lines+markers")
+
+            # line_fig.scatter()
 
             line_fig.update_xaxes(
               tickangle=-45,#the angle of the presentation
               dtick="M1", # sets minimal interval to month
-              tickformat="%d.%m.%Y",) # the date format you want 
+              tickformat="%d.%m.%Y",
+              ) # the date format you want 
             
             graph = line_fig.to_html(config={'displayModeBar': True})
             return graph

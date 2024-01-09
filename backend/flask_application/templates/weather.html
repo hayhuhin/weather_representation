@@ -1,22 +1,88 @@
 {% extends "base.html" %}
-{% block title %}home page{% endblock title %}
+{% block title %}weather page{% endblock title %}
 {% block content %}
 
 
 
-<div class="container">
+<div class="container"><!-- the main container of the whole weather page-->
+
+
+<!-- data bar -->
+
+<!-- -->
+
+<h1>Today weather</h1>
+  <figcaption class="blockquote-footer">
+    today date is 2024-01-08
+  </figcaption>
+<p>This information is for study purpose only.</p>
+<p>
+the information is provided from two open source api's and made to compare
+the differences of each api when trying to get the same information at the same time,
+<a href="/homepage">for more information.</a>
+</p>
+
+
 {% if content.weather_day_graph %}
     {% for graph in content.weather_day_graph %}
-        <h3>{{content.weather_day_graph[graph].data.name}}</h3>
-        <p>{{content.weather_day_graph[graph].data.appearance[0]}}</p>
-        <p>{{content.weather_day_graph[graph].data.appearance[1]}}</p>
 
-        {{ content.weather_day_graph[graph].html|safe }}
+        <div class="graph_main border rounded border-1 p-3 my-2" style="width-max:900px;width-min:400px;width:930px;background-color:#262a2e" >
+            <h3>{{content.weather_day_graph[graph].data.name}}</h3>
+
+        <div class="border rounded m-2 p-2 " style="background-color:#212529">
+        <table class="table table-hover">
+
+
+
+              <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">weatherapi</th>
+                    <th scope="col">time</th>
+                    <th scope="col">openmateo</th>
+                    <th scope="col">time</th>
+                    <th scope="col">diff</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">max</th>
+                    <td>{{content.weather_day_graph[graph].data.information.weatherapi[0].data.max[0]}}</td>
+                    <td>{{content.weather_day_graph[graph].data.information.weatherapi[0].data.max[1]}}</td>
+
+                    <td>{{content.weather_day_graph[graph].data.information.openmateo[0].data.max[0]}}</td>
+                    <td>{{content.weather_day_graph[graph].data.information.openmateo[0].data.max[1]}}</td>
+                    <td>testing</td>
+                </tr>
+                <tr>
+                    <th scope="row">min</th>
+
+                    <td>{{content.weather_day_graph[graph].data.information.weatherapi[0].data.min[0]}}</td>
+                    <td>{{content.weather_day_graph[graph].data.information.weatherapi[0].data.min[1]}}</td>
+
+                    <td>{{content.weather_day_graph[graph].data.information.openmateo[0].data.min[0]}}</td>
+                    <td>{{content.weather_day_graph[graph].data.information.openmateo[0].data.min[1]}}</td>
+
+                    <td>2c</td>
+                    <td>05:00</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+
+
+
+
+
+            {{ content.weather_day_graph[graph].html|safe }}
+        </div><!-- graph_main -->
 
 
     {% endfor %}
 {% endif %}
 
+
+<!-- this section is only happen if the data is week data -->
 {% if content.week_data %}
     {% for graph in content.week_data %}
         <h1>{{ content.week_data[graph] }}</h1>
@@ -27,31 +93,6 @@
 <!-- testing for now -->
 
 
+</div><!-- the main container of the whole weather page-->
+{% endblock content %} 
 
-
-
-
-
-
-
-<form method="POST">
-<button type="submit" id="display_id" name="change_display" value="change_display">change display</button>
-</form>
-
-{% endblock content %}
-
-{% block content_2 %}
-<div class="container">
-    {% for graph in content.weather_day_graph %}
-    <div class="card" style="width: 18rem;">
-        <img src="..." class="card-img-top" alt="...">
-        <div class="card-body">
-            <h5 class="card-title">Card title</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="#" class="btn btn-primary">Go somewhere</a>
-        </div>
-    </div>
-    {% endfor %}
-
-</div>
-{% endblock content_2 %}

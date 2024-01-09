@@ -70,7 +70,7 @@ def weather_info():
             current_state = controller.redis.get(key=user_ip)["graph_repr"]
             if current_state == "day":
                 # weather_day_graph = controller.change_state(state="day",start=start,end=end,ip=user_ip)
-                weather_day_graph = controller.day_view(required_data=api_data,graph_type="line_bar") 
+                weather_day_graph = controller.day_view(required_data=api_data,graph_type="line_graph_compared") 
 
 
                 return render_template("weather.html",content={"weather_day_graph":weather_day_graph})

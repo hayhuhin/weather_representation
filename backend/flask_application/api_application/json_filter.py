@@ -1,4 +1,4 @@
-from .serializer import WeekDataSerializer
+from serializer import WeekDataSerializer
 
 
 
@@ -42,7 +42,7 @@ class JsonFilter:
         hourly_dict = {}
         for items in days_dict[date]["hourly_data"]:
 
-            hourly_dict[items["time"]] = {
+            hourly_dict[items["time"][-5::]] = {
                 "will_it_rain" :items["will_it_rain"],
                 "chance_of_rain" :items["chance_of_rain"],
                 "wind_kph" :items["wind_kph"],
@@ -146,4 +146,6 @@ class JsonFilter:
 
 
         return dict_data
+    
+
     

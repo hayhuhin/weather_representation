@@ -6,7 +6,7 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
-from .json_filter import JsonFilter
+from json_filter import JsonFilter
 
 
 
@@ -151,6 +151,52 @@ class WeatherApi:
             
 
 
+    def calculate_min_max(self,json_data):
+        """
+        this method returns the min and max of each category in the json
+
+        Returns:
+            json min max data of each category in the daily json
+        """
+
+        dict_data = {}
+
+
+        for items in json_data:
+            values = json_data[items]["y"]
+
+            time = json_data[items]["x"]
+
+            min_val = ""
+            min_time = ""
+            max_val = ""
+            max_time = ""
+            for index,y in enumerate(values):
+                if not max_val:
+                    max_val = y
+
+                if not min_val:
+                    min_val = y
+
+                if min_val < y:
+                    min_val = min_val
+                
+                else:
+                    min_val = y
+                    min_time = time[index]
+
+                if max_val > y:
+                    max_val = max_val
+                
+                else:
+                    max_val = y
+                    max_time = time[index]
+
+            dict_data[items] = {"data":{"min":(min_val,min_time),"max":(max_val,max_time)}},
+
+        return dict_data
+
+
     def queue_micro_service(self):
         """
         this method can have microservices that have to run before each api call.
@@ -159,7 +205,6 @@ class WeatherApi:
         #! for now returns always True
         print("api called")
         return True
-
 
 
     def return_test_data(self) -> dict:
@@ -224,7 +269,6 @@ class OpenMeteoApi:
         return data
 
 
-
     def weather_by_day(self,params):
         """
         this method queries the database and returns the daily json that have a large data of each hour from the range od dates
@@ -268,31 +312,40 @@ class OpenMeteoApi:
             hourly_data["temp_c"] = hourly_temperature_2m
             hourly_data["feelslike_c"] = hourly_apparent_temperature
 
-# df['date'] = pd.to_datetime(df['date'], unit='ms')
+
+
+
+
+
+
 
 # Create a new DataFrame with the desired structure
 
-
-
-
             df = pd.DataFrame(data = hourly_data)
 
-            result_df = pd.DataFrame({
-                
-                    'temp_c': {'y': df['temp_c'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []},
-                    'will_it_rain': {'y': df['will_it_rain'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []},
-                    'chance_of_rain': {'y': df['chance_of_rain'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []},
-                    'wind_kph': {'y': df['wind_kph'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []},
-                    'feelslike_c': {'y': df['feelslike_c'].tolist(), 'x': df['date'].dt.strftime('%Y-%m-%d %H:%M').tolist(), 'y_2': []}
-                ,
-            })
+
+
+
+            df['date'] = pd.to_datetime(df['date'], unit='ms')
+            openmateo_dict = {
+                'temp_c': {'y': df['temp_c'].tolist(), 'x': df['date'].dt.strftime('%H:%M').tolist(), 'y_2': []},
+                'will_it_rain': {'y': df['will_it_rain'].tolist(), 'x': df['date'].dt.strftime('%H:%M').tolist(), 'y_2': []},
+                'chance_of_rain': {'y': df['chance_of_rain'].tolist(), 'x': df['date'].dt.strftime('%H:%M').tolist(), 'y_2': []},
+                'wind_kph': {'y': df['wind_kph'].tolist(), 'x': df['date'].dt.strftime('%H:%M').tolist(), 'y_2': []},
+                'feelslike_c': {'y': df['feelslike_c'].tolist(), 'x': df['date'].dt.strftime('%H:%M').tolist(), 'y_2': []}
+            }
+
+
 
             # print(hourly_dataframe.to_json())for i in 
-            json_result = result_df.to_json()
+            openmateo = {**openmateo_dict,"graph_repr":"day","source":"openmateo.com"}
 
-            return json_result
+            # result_json = pd.Series(openmateo_dict).to_json()
 
 
+            
+
+            return openmateo
 
 
     def weather_by_week(self,params) -> pd.DataFrame:
@@ -342,11 +395,79 @@ class OpenMeteoApi:
             # daily_data["precipitation_probability_min"] = daily_precipitation_probability_min
             daily_data["feelslike_c"] = daily_precipitation_hours
             daily_data["wind_kph"] = daily_wind_speed_10m_max
-            daily_dataframe = pd.DataFrame(data = daily_data)
+
+            df = pd.DataFrame(data = daily_data)
 
 
-            return daily_dataframe
+            df['date'] = pd.to_datetime(df['date'], unit='ms')
+            openmateo_dict = {
+                'temp_c': {'y': df['temp_c'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []},
+                'will_it_rain': {'y': df['will_it_rain'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []},
+                'chance_of_rain': {'y': df['chance_of_rain'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []},
+                'wind_kph': {'y': df['wind_kph'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []},
+                'feelslike_c': {'y': df['feelslike_c'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []}
+            }
 
+
+
+
+
+
+            return openmateo_dict
+
+
+    def calculate_min_max(self,json_data):
+        """
+        this method calculates the min max of each field in the json and structuring new dict with the data
+
+        Returns:
+            dict with the values of the data
+        """
+
+        source = json_data["source"]
+        graph_repr = json_data["graph_repr"]
+
+
+        dict_data = {}
+        json_data.pop("graph_repr")
+        json_data.pop("source")
+        # print(json_data)
+
+
+        for items in json_data:
+            values = json_data[items]["y"]
+
+            time = json_data[items]["x"]
+
+            min_val = ""
+            min_time = ""
+            max_val = ""
+            max_time = ""
+            for index,y in enumerate(values):
+                if not max_val:
+                    max_val = y
+
+                if not min_val:
+                    min_val = y
+
+                if min_val < y:
+                    min_val = min_val
+                
+                else:
+                    min_val = y
+                    min_time = time[index]
+
+                if max_val > y:
+                    max_val = max_val
+                
+                else:
+                    max_val = y
+                    max_time = time[index]
+            
+
+
+            dict_data[items] = {"data":{"min":(min_val,min_time),"max":(max_val,max_time)}},
+        return dict_data
 
 
 
@@ -354,9 +475,9 @@ class ApiController:
     def __init__(self,openmateo_config,weatherapi_config,test_mode:bool):
 
         self.openmateo_class = OpenMeteoApi(uri=openmateo_config["uri"])
-        self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["key"],test_mode=test_mode)
+        self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["api_key"],test_mode=test_mode)
 
-    
+  
     def day_data(self,params:dict) -> dict:
         """
         this method getting the data of the both apis as a dict where the keys are the name of the api and the values is the api json data
@@ -373,8 +494,13 @@ class ApiController:
         weather_api_data = self.weatherapi_class.weather_by_day(params=params)
         openmateo_data = self.openmateo_class.weather_by_day(params=params)
 
-        weather_day_data = {"weatherapi":weather_api_data,"openmateo":openmateo_data}
-        
+        weather_min_max = self.weatherapi_class.calculate_min_max(weather_api_data)
+        openmateo_min_max = self.openmateo_class.calculate_min_max(openmateo_data)
+
+        weather_api_data["source"] = "weatherapi.com"
+        openmateo_data["source"] = "openmateoapi.com"
+        weather_day_data = {"weatherapi":weather_api_data,"openmateo":openmateo_data,"weatherapi_min_max":weather_min_max,"openmateo_min_max":openmateo_min_max}
+
         return weather_day_data
 
 
@@ -403,7 +529,7 @@ class ApiController:
 
 
 
-#*checking the weatherapi methods and all is good
+
 # WEATHERAPI_API_URI = "http://api.weatherapi.com/v1"
 # WEATHERAPI_API_KEY = "d3fd130224194172b95202121240101"
 # WEATHERAPI_NAME = "weatherapi.com"
@@ -481,3 +607,14 @@ WEATHERAPI_API_CONFIG = {
 # week_data = test_class.week_data(params=basic_data)
 
 #! will be used later in the production website
+required_data = {
+"start_date":"2024-01-08",
+"end_date":"2024-01-08",
+"ip":"8.8.8.8",
+}
+
+print(WEATHERAPI_API_CONFIG)
+test_class = ApiController(openmateo_config=OPENMATEO_API_CONFIG,weatherapi_config=WEATHERAPI_API_CONFIG,test_mode=True)
+json_data = test_class.week_data(params=required_data)
+# min_max = test_class.calculate_min_max(json_data)
+print(json_data)

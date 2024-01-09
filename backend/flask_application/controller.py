@@ -83,16 +83,46 @@ class ControllerClass:
         
 
     #TODO add the option to change the graph repr from line to bar graph
-    def day_view(self,required_data,graph_type:str="line_bar") -> str:
-        temp_c = required_data["user_data"]["weatherapi"][0]
-        will_it_rain = required_data["user_data"]["weatherapi"][1]
-        chance_of_rain = required_data["user_data"]["weatherapi"][2]
-        wind_kph = required_data["user_data"]["weatherapi"][3]
-        feelslike_c = required_data["user_data"]["weatherapi"][4]
-        source = required_data["user_data"]["weatherapi"][5]
+    def day_view(self,required_data,graph_type:str="line_graph_compared") -> str:
 
 
 
+        # print(required_data["user_data"]["openmateo"])
+
+        source1 = required_data["user_data"]["weatherapi"]["source"]
+        source2 = required_data["user_data"]["openmateo"]["source"]
+
+        temp_c = required_data["user_data"]["weatherapi"]["temp_c"]
+        temp_c["y_2"] = required_data["user_data"]["openmateo"]["temp_c"]["y"]
+        temp_c["DB_1"] = source1
+        temp_c["DB_2"] = source2
+
+        will_it_rain = required_data["user_data"]["weatherapi"]["will_it_rain"]
+        will_it_rain["y_2"] = required_data["user_data"]["openmateo"]["will_it_rain"]["y"]
+
+        will_it_rain["DB_1"] = source1
+        will_it_rain["DB_2"] = source2
+
+        chance_of_rain = required_data["user_data"]["weatherapi"]["chance_of_rain"]
+        chance_of_rain["y_2"] = required_data["user_data"]["openmateo"]["chance_of_rain"]["y"]
+
+        chance_of_rain["DB_1"] = source1
+        chance_of_rain["DB_2"] = source2
+
+        wind_kph = required_data["user_data"]["weatherapi"]["wind_kph"]
+        wind_kph["y_2"] = required_data["user_data"]["openmateo"]["wind_kph"]["y"]
+
+        wind_kph["DB_1"] = source1
+        wind_kph["DB_2"] = source2
+
+        feelslike_c = required_data["user_data"]["weatherapi"]["feelslike_c"]
+        feelslike_c["y_2"] = required_data["user_data"]["openmateo"]["feelslike_c"]["y"]
+
+        feelslike_c["DB_1"] = source1
+        feelslike_c["DB_2"] = source2
+
+
+        # print(graph_type)
         # graph_html = graph_repr.graph_options(graph_type="bar_graph",dict_values=dict_values,graph_repr="1_row",path="")
         temp_c_html = self.graph_repr.graph_options(graph_type=graph_type,dict_values=temp_c,graph_repr="1_row",path="")
         will_it_rain_html= self.graph_repr.graph_options(graph_type=graph_type,dict_values=will_it_rain,graph_repr="1_row",path="")
@@ -102,14 +132,68 @@ class ControllerClass:
 
 
 
+        openmateo_min_max = required_data["user_data"]["openmateo_min_max"]
+        weatherapi_min_max = required_data["user_data"]["weatherapi_min_max"]
+
+
 
         weather_day_graph = {
-            "temp_c":{"html":temp_c_html,"data":{"name":"temperature","appearance":[f"blue bar is {source['blue_bar']}",f"red bar is {source['red_bar']}"]}},
-            "will_it_rain":{"html":will_it_rain_html,"data":{"name":"will it rain","appearance":[f"blue bar is {source['blue_bar']}",f"red bar is {source['red_bar']}"]}},
-            "chance_of_rain":{"html":chance_of_rain_html,"data":{"name":"chance of rain","appearance":[f"blue bar is {source['blue_bar']}",f"red bar is {source['red_bar']}"]}},
-            "wind_kph":{"html":wind_kph_html,"data":{"name":"wind kph","appearance":[f"blue bar is {source['blue_bar']}",f"red bar is {source['red_bar']}"]}},
-            "feelslike_c":{"html":feelslike_c_html,"data":{"name":"feels like ","appearance":[f"blue bar is {source['blue_bar']}",f"red bar is {source['red_bar']}"]}},
-                            }
+            "temp_c":{
+                "html":temp_c_html,
+                "data":{
+                    "name":"temperature",
+                    "appearance":source1,
+                    "information":{
+                        "weatherapi":weatherapi_min_max["temp_c"],
+                        "openmateo":openmateo_min_max["temp_c"],
+                                  }
+                        }
+                    },
+            "will_it_rain":{
+                "html":will_it_rain_html,
+                "data":{
+                    "name":"will it rain",
+                    "appearance":source1,
+                    "information":{
+                        "weatherapi":weatherapi_min_max["will_it_rain"],
+                        "openmateo":openmateo_min_max["will_it_rain"],
+                                    }
+                        }
+                    },
+            "chance_of_rain":{
+                "html":chance_of_rain_html,
+                "data":{
+                    "name":"chance of rain",
+                    "appearance":source1,
+                    "information":{
+                        "weatherapi":weatherapi_min_max["chance_of_rain"],
+                        "openmateo":openmateo_min_max["chance_of_rain"],
+                                }
+                        }
+                    },
+            "wind_kph":{
+                "html":wind_kph_html,
+                "data":{
+                    "name":"wind kph",
+                    "appearance":source1,
+                    "information":{
+                        "weatherapi":weatherapi_min_max["wind_kph"],
+                        "openmateo":openmateo_min_max["wind_kph"],
+                                }
+                        }
+                    },
+            "feelslike_c":{
+                "html":feelslike_c_html,
+                "data":{
+                    "name":"feels like ",
+                    "appearance":source1,
+                    "information":{
+                        "weatherapi":weatherapi_min_max["feelslike_c"],
+                        "openmateo":openmateo_min_max["feelslike_c"],
+                                    }
+                        }
+                    },
+            }
 
         return weather_day_graph
 
