@@ -6,7 +6,7 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
-from json_filter import JsonFilter
+from .json_filter import JsonFilter
 
 
 
@@ -251,6 +251,7 @@ class OpenMeteoApi:
         # self.params = params
         self.cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
         self.retry_session = retry(self.cache_session, retries = 5, backoff_factor = 0.2)
+
         self.openmeteo = openmeteo_requests.Client(session = self.retry_session)
         self.test_mode = test_mode
 
@@ -306,20 +307,12 @@ class OpenMeteoApi:
             freq = pd.Timedelta(seconds = hourly.Interval()),
             inclusive = "left"
             )}
-            hourly_data["chance_of_rain"] = hourly_precipitation_probability
-            hourly_data["will_it_rain"] = hourly_rain
-            hourly_data["wind_kph"] = hourly_wind_speed_10m
-            hourly_data["temp_c"] = hourly_temperature_2m
-            hourly_data["feelslike_c"] = hourly_apparent_temperature
+            hourly_data["chance_of_rain"] = [float(f"{i:.2f}") for i in hourly_precipitation_probability]
+            hourly_data["will_it_rain"] = [float(f"{i:.2f}") for i in hourly_rain]
+            hourly_data["wind_kph"] = [float(f"{i:.2f}") for i in hourly_wind_speed_10m]
+            hourly_data["temp_c"] = [float(f"{i:.2f}") for i in hourly_temperature_2m]
+            hourly_data["feelslike_c"] = [float(f"{i:.2f}") for i in hourly_apparent_temperature]
 
-
-
-
-
-
-
-
-# Create a new DataFrame with the desired structure
 
             df = pd.DataFrame(data = hourly_data)
 
@@ -337,15 +330,11 @@ class OpenMeteoApi:
 
 
 
-            # print(hourly_dataframe.to_json())for i in 
+
             openmateo = {**openmateo_dict,"graph_repr":"day","source":"openmateo.com"}
 
-            # result_json = pd.Series(openmateo_dict).to_json()
-
-
-            
-
             return openmateo
+
 
 
     def weather_by_week(self,params) -> pd.DataFrame:
@@ -395,24 +384,32 @@ class OpenMeteoApi:
             # daily_data["precipitation_probability_min"] = daily_precipitation_probability_min
             daily_data["feelslike_c"] = daily_precipitation_hours
             daily_data["wind_kph"] = daily_wind_speed_10m_max
-
+            
             df = pd.DataFrame(data = daily_data)
 
+            #! need to recheck the specific data i want to get\
+            #* this is not a proper data(avgtemp is feelslike etc...)
 
-            df['date'] = pd.to_datetime(df['date'], unit='ms')
-            openmateo_dict = {
-                'temp_c': {'y': df['temp_c'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []},
-                'will_it_rain': {'y': df['will_it_rain'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []},
-                'chance_of_rain': {'y': df['chance_of_rain'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []},
-                'wind_kph': {'y': df['wind_kph'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []},
-                'feelslike_c': {'y': df['feelslike_c'].tolist(), 'x': df['date'].dt.strftime('%d/%m').tolist(), 'y_2': []}
-            }
-
-
-
-
-
-
+            openmateo_dict = {}
+            for index, row in df.iterrows():
+                date_str = str(row['date'].date())  # Convert date to string
+                
+                # Extract the relevant information from the DataFrame row
+                maxtemp_c = row['temp_c']
+                avgtemp_c = row['feelslike_c']
+                daily_will_it_rain = row['will_it_rain']
+                daily_chance_of_rain = row['chance_of_rain']
+                
+                # Create a nested dictionary for each date
+                date_data = {
+                    'maxtemp_c': float(f"{maxtemp_c:.1f}"),
+                    'avgtemp_c': float(f"{avgtemp_c:.1f}"),
+                    'daily_will_it_rain': float(f"{daily_will_it_rain:.1f}"),
+                    'daily_chance_of_rain': float(f"{daily_chance_of_rain:.1f}")
+                }
+                
+                # Add the nested dictionary to the main dictionary with date as the key
+                openmateo_dict[date_str] = date_data
             return openmateo_dict
 
 
@@ -613,8 +610,6 @@ required_data = {
 "ip":"8.8.8.8",
 }
 
-print(WEATHERAPI_API_CONFIG)
 test_class = ApiController(openmateo_config=OPENMATEO_API_CONFIG,weatherapi_config=WEATHERAPI_API_CONFIG,test_mode=True)
 json_data = test_class.week_data(params=required_data)
 # min_max = test_class.calculate_min_max(json_data)
-print(json_data)

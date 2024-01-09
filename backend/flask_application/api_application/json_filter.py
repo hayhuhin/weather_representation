@@ -1,4 +1,4 @@
-from serializer import WeekDataSerializer
+from .serializer import WeekDataSerializer
 
 
 

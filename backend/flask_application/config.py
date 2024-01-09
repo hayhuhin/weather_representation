@@ -32,14 +32,14 @@ REDIS_CONFIG = {
 
 WEATHERAPI_API_CONFIG= {
     "uri":WEATHERAPI_API_URI,
-    "key":WEATHERAPI_API_KEY,
+    "api_key":WEATHERAPI_API_KEY,
     "source":WEATHERAPI_NAME
 }
 
 
 OPENMATEO_API_CONFIG = {
     "uri":OPENMETEO_URI,
-    "key":OPENMETEO_KEY,
+    "api_key":OPENMETEO_KEY,
     "source":OPENMETEO_SOURCE,
 }
 
