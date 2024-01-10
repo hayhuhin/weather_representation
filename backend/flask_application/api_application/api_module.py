@@ -7,6 +7,7 @@ import requests_cache
 import pandas as pd
 from retry_requests import retry
 from .json_filter import JsonFilter
+from .ip_converter import IpConverter
 
 
 
@@ -95,8 +96,7 @@ class WeatherApi:
             start_date = params["start_date"]
             end_date = params["end_date"]
             user_ip = params["ip"]
-
-            get_query = f"{self.uri}/history.json?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
+            get_query = f"{self.uri}/forecast.json?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
 
             api_request = requests.get(get_query).json()
             json_filter = JsonFilter(json_data=api_request)
@@ -143,7 +143,7 @@ class WeatherApi:
             end_date = params["end_date"]
             user_ip = params["ip"]
 
-            get_query = f"{self.uri}/history.json?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
+            get_query = f"{self.uri}/forecast.json?key={self.key}&q={user_ip}&days=7"
             api_request = requests.get(get_query).json()
             json_filter = JsonFilter(json_data=api_request)
             filtered_data = json_filter.specific_week_data(start_date=params["start_date"],end_date=params["end_date"])
@@ -222,7 +222,7 @@ class WeatherApi:
 
 
 class OpenMeteoApi:
-    def __init__(self,uri:str,api_key:str="no key",test_mode:bool=False) -> dict:
+    def __init__(self,uri:str,geo_api_key:str,api_key:str="no key",test_mode:bool=False) -> dict:
           
         """
         constructor method of the openmeteoapi class
@@ -255,7 +255,7 @@ class OpenMeteoApi:
         self.openmeteo = openmeteo_requests.Client(session = self.retry_session)
         self.test_mode = test_mode
 
-
+        self.geo_api_key = geo_api_key
 
 
     def queue_micro_service(self):
@@ -264,10 +264,9 @@ class OpenMeteoApi:
 
 
     def ip_translator(self,ip):
-        data = {"latitude": 32.028320,
-	            "longitude": 34.781879,}
-
-        return data
+        ip_converter_class = IpConverter(api_key=self.geo_api_key,ip_addr=ip)
+        geo_location = ip_converter_class.geo_location()
+        return geo_location
 
 
     def weather_by_day(self,params):
@@ -348,7 +347,7 @@ class OpenMeteoApi:
 
 
             api_params = {
-            "past_days":7,
+            "past_days":6,
             "hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
             "daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
             "forecast_days":1,
@@ -471,7 +470,7 @@ class OpenMeteoApi:
 class ApiController:
     def __init__(self,openmateo_config,weatherapi_config,test_mode:bool):
 
-        self.openmateo_class = OpenMeteoApi(uri=openmateo_config["uri"])
+        self.openmateo_class = OpenMeteoApi(uri=openmateo_config["uri"],geo_api_key=openmateo_config["geo_api_key"])
         self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["api_key"],test_mode=test_mode)
 
   
@@ -610,6 +609,6 @@ required_data = {
 "ip":"8.8.8.8",
 }
 
-test_class = ApiController(openmateo_config=OPENMATEO_API_CONFIG,weatherapi_config=WEATHERAPI_API_CONFIG,test_mode=True)
-json_data = test_class.week_data(params=required_data)
+# test_class = ApiController(openmateo_config=OPENMATEO_API_CONFIG,weatherapi_config=WEATHERAPI_API_CONFIG,test_mode=True)
+# json_data = test_class.week_data(params=required_data)
 # min_max = test_class.calculate_min_max(json_data)

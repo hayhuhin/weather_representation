@@ -1,7 +1,7 @@
 from datetime import datetime,timedelta,date
 
 
-class Time:
+class CustomTime:
     """
     simple class that returns list of the dates from the current day and seven days before
 
@@ -14,8 +14,8 @@ class Time:
         today = str(date.today())
         week_dates_list = []
         format_dates = datetime.strptime(today,"%Y-%m-%d")
-        for i in range(1,8):
-            week_dates_list.append(str(format_dates+timedelta(days=-i))[:10:])
+        for i in range(0,7):
+            week_dates_list.append(str(format_dates+timedelta(days=i))[:10:])
 
         return week_dates_list
 

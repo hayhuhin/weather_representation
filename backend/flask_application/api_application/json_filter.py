@@ -5,6 +5,7 @@ from .serializer import WeekDataSerializer
 class JsonFilter:
     def __init__(self,json_data) -> None:
         self.json = json_data
+        print(self.json)
         self.serializer = WeekDataSerializer(location="london",weather_data=self.json["forecast"]["forecastday"])
 
 
@@ -34,7 +35,6 @@ class JsonFilter:
         return filtered_data
 
 
-            # print(data["date"],data["day"]["maxtemp_c"])
 
 
     def specific_day_data(self,date:dict,source:dict={"blue_bar":"source_1","red_bar":"source_2"}) -> dict:

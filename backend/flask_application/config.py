@@ -22,6 +22,8 @@ OPENMETEO_KEY = os.environ.get("OPENMETEO_KEY")
 OPENMETEO_SOURCE = os.environ.get("OPENMETEO_SOURCE")
 
 
+GEO_API_KEY = os.environ.get("GEO_API_KEY")
+
 REDIS_CONFIG = {
     "host":HOST_URI,
     "port":REDIS_PORT,
@@ -41,6 +43,7 @@ OPENMATEO_API_CONFIG = {
     "uri":OPENMETEO_URI,
     "api_key":OPENMETEO_KEY,
     "source":OPENMETEO_SOURCE,
+    "geo_api_key":GEO_API_KEY,
 }
 
 
@@ -51,3 +54,4 @@ OPENMATEO_API_PARAMS = {
 	"forecast_days":1,
 }
 
+IPGEOLOCATION_KEY = os.environ.get("IPGEOLOCATION_API_KEY")

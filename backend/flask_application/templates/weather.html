@@ -11,9 +11,9 @@
 
 <!-- -->
 
-<h1>Today weather</h1>
+<h1>{{content.context}}</h1>
   <figcaption class="blockquote-footer">
-    today date is 2024-01-08
+    today date is 2024-01-10
   </figcaption>
 <p>This information is for study purpose only.</p>
 <p>
@@ -64,7 +64,7 @@ the differences of each api when trying to get the same information at the same 
                     <td>{{content.weather_day_graph[graph].data.information.openmateo[0].data.min[1]}}</td>
 
                     <td>2c</td>
-                    <td>05:00</td>
+
                 </tr>
             </tbody>
         </table>
@@ -83,9 +83,48 @@ the differences of each api when trying to get the same information at the same 
 
 
 <!-- this section is only happen if the data is week data -->
+
+
 {% if content.week_data %}
-    {% for graph in content.week_data %}
-        <h1>{{ content.week_data[graph] }}</h1>
+    {% for graph in content.week_data.user_data %}
+        <h1>{{graph}}</h1>
+
+        <table class="table table-bordered w-50">
+              <thead>
+                    <tr>
+                    <th scope="col">#</th>
+                    {% for dates in content.week_data.user_data[graph] %}
+                    <th scope="col">{{dates}}</th>
+                    {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">maxtemp_c</th>
+                        {% for dates in content.week_data.user_data[graph] %}
+                            <td style="text-indent: 3rem;">{{content.week_data.user_data[graph][dates].maxtemp_c}}&emsp;&emsp;</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th scope="row">avgtemp_c</th>
+                        {% for dates in content.week_data.user_data[graph] %}
+                            <td style="text-indent: 3rem;">{{content.week_data.user_data[graph][dates].avgtemp_c}}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th scope="row">daily_will_it_rain</th>
+                        {% for dates in content.week_data.user_data[graph] %}
+                            <td style="text-indent: 3rem;">{{content.week_data.user_data[graph][dates].daily_will_it_rain}}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th scope="row">daily_chance_of_rain</th>
+                        {% for dates in content.week_data.user_data[graph] %}
+                            <td style="text-indent: 3rem;">{{content.week_data.user_data[graph][dates].daily_chance_of_rain}}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
     {% endfor %}
 {% endif %}
 </div>
