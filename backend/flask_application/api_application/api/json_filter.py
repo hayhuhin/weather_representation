@@ -1,4 +1,4 @@
-from backend.flask_application.api_application.api.serializer import WeekDataSerializer
+from .serializer import WeekDataSerializer
 
 
 
@@ -141,7 +141,7 @@ class JsonFilter:
         }
 
 
-        dict_data = {"temp_c":temp_c,"will_it_rain":will_it_rain,"chance_of_rain":chance_of_rain,"wind_kph":wind_kph,"feelslike_c":feelslike_c}
+        dict_data = {"temp_c":temp_c,"will_it_rain":will_it_rain,"chance_of_rain":chance_of_rain,"wind_kph":wind_kph,"feelslike_c":feelslike_c,"source":"openmateo.com"}
 
 
         return dict_data

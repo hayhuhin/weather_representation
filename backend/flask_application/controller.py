@@ -38,17 +38,19 @@ class ControllerClass:
 
 
         #*creating the request from the api's and then getting the data
-        self.api_facade.create_day_request(params=params)
-        day_data = self.api_facade.get_day_request()
+        self.api_facade.create_day_request()
+        day_data = self.api_facade.get_day_request(params=params)
 
         #this adding the cache data into the redis db
         result = self.redis.set_key(key=ip,value={"user_data":day_data,"graph_repr":"day"})
+        print(day_data)
 
     
 
     def change_state(self,state:str,start_date:str,end_date:str,ip:str):
         #first we checking if the user already sent api request in the last 30 sec
 
+        #!need to have another class that have the current state of the application
         timer_is_set = self.redis.check_timer(key=ip)
         if timer_is_set:
             print(f"you have ttl and have to wait atleast {timer_is_set}")
@@ -63,7 +65,8 @@ class ControllerClass:
             "ip":ip,
             }
             
-            api_data = self.api.week_data(params=params)
+            self.api_facade.create_day_request()
+            week_data = self.api_facade.get_week_request(params=params)
 
             #first we delete the existing data if any
             self.redis.clear_all(ip)
@@ -86,7 +89,8 @@ class ControllerClass:
 
             #this adding the cache data into the redis db
             result = self.redis.set_key(key=ip,value={"user_data":api_data,"graph_repr":"day"},timer=self.api_ttl)
-
+            self.api_facade.create_day_request()
+            day_data = self.api_facade.get_day_request(params=params)
         
 
     #TODO add the option to change the graph repr from line to bar graph
@@ -95,6 +99,7 @@ class ControllerClass:
 
 
         # print(required_data["user_data"]["openmateo"])
+        print(required_data)
 
         source1 = required_data["user_data"]["weatherapi"]["source"]
         source2 = required_data["user_data"]["openmateo"]["source"]

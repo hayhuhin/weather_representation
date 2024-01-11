@@ -6,8 +6,8 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
-from backend.flask_application.api_application.api.json_filter import JsonFilter
-from ip_converter import IpConverter
+from .json_filter import JsonFilter
+from .ip_converter import IpConverter
 
 
 
@@ -66,14 +66,12 @@ class WeatherApi:
         self.uri = uri
         self.key = api_key
         self.test_mode = test_mode
+        self.name = "weatherapi"
         
 
 
 
     def weather_by_day(self,params:dict) -> dict:
-
-
-
         #* this is returning test data if the test_mode is True
         if self.test_mode:
             test_data = self.return_test_data()
@@ -222,6 +220,7 @@ class WeatherApi:
 
 
 class OpenMeteoApi:
+
     def __init__(self,uri:str,geo_api_key:str,api_key:str="no key",test_mode:bool=False) -> dict:
           
         """
@@ -256,6 +255,8 @@ class OpenMeteoApi:
         self.test_mode = test_mode
 
         self.geo_api_key = geo_api_key
+
+        self.name = "openmateo"
 
 
     def queue_micro_service(self):
