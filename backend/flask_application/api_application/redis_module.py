@@ -4,7 +4,7 @@ from redis.commands.json.path import Path
 load_dotenv(dotenv_path="backend/api_application/.env")
 
 
-
+#! the user can wait every 30 seconds
 class RedisConnector:
   """"
   wrapper class that uses redis methods that later used in the main applicatin
@@ -16,7 +16,7 @@ class RedisConnector:
 
 
   def register_ip(self):
-    pass
+    pass 
 
 
   def set_key(self,key:str,value:dict,replace:bool=False,TTL:int=3600,timer:int=0) -> bool:

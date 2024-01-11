@@ -6,8 +6,8 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
-from .json_filter import JsonFilter
-from .ip_converter import IpConverter
+from backend.flask_application.api_application.api.json_filter import JsonFilter
+from ip_converter import IpConverter
 
 
 
@@ -467,60 +467,60 @@ class OpenMeteoApi:
 
 
 
-class ApiController:
-    def __init__(self,openmateo_config,weatherapi_config,test_mode:bool):
+# class ApiController:
+#     def __init__(self,openmateo_config,weatherapi_config,test_mode:bool):
 
-        self.openmateo_class = OpenMeteoApi(uri=openmateo_config["uri"],geo_api_key=openmateo_config["geo_api_key"])
-        self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["api_key"],test_mode=test_mode)
+#         self.openmateo_class = OpenMeteoApi(uri=openmateo_config["uri"],geo_api_key=openmateo_config["geo_api_key"])
+#         self.weatherapi_class = WeatherApi(uri=weatherapi_config["uri"],api_key=weatherapi_config["api_key"],test_mode=test_mode)
 
   
-    def day_data(self,params:dict) -> dict:
-        """
-        this method getting the data of the both apis as a dict where the keys are the name of the api and the values is the api json data
+#     def day_data(self,params:dict) -> dict:
+#         """
+#         this method getting the data of the both apis as a dict where the keys are the name of the api and the values is the api json data
 
-        Args:
-            start_date(str):
-                the specific data of the date
-        Returns:
-            dict when the keys are the api names and the value is the api response of each api
-        """
+#         Args:
+#             start_date(str):
+#                 the specific data of the date
+#         Returns:
+#             dict when the keys are the api names and the value is the api response of each api
+#         """
 
-        #TODO getting the latitude and langtitude of an ip address
+#         #TODO getting the latitude and langtitude of an ip address
         
-        weather_api_data = self.weatherapi_class.weather_by_day(params=params)
-        openmateo_data = self.openmateo_class.weather_by_day(params=params)
+#         weather_api_data = self.weatherapi_class.weather_by_day(params=params)
+#         openmateo_data = self.openmateo_class.weather_by_day(params=params)
 
-        weather_min_max = self.weatherapi_class.calculate_min_max(weather_api_data)
-        openmateo_min_max = self.openmateo_class.calculate_min_max(openmateo_data)
+#         weather_min_max = self.weatherapi_class.calculate_min_max(weather_api_data)
+#         openmateo_min_max = self.openmateo_class.calculate_min_max(openmateo_data)
 
-        weather_api_data["source"] = "weatherapi.com"
-        openmateo_data["source"] = "openmateoapi.com"
-        weather_day_data = {"weatherapi":weather_api_data,"openmateo":openmateo_data,"weatherapi_min_max":weather_min_max,"openmateo_min_max":openmateo_min_max}
+#         weather_api_data["source"] = "weatherapi.com"
+#         openmateo_data["source"] = "openmateoapi.com"
+#         weather_day_data = {"weatherapi":weather_api_data,"openmateo":openmateo_data,"weatherapi_min_max":weather_min_max,"openmateo_min_max":openmateo_min_max}
 
-        return weather_day_data
+#         return weather_day_data
 
 
-    def week_data(self,params:dict) -> dict:
-        """
-        this method getting the data of the both apis as a dict where the keys are the name of the api and the values is the api json data
+#     def week_data(self,params:dict) -> dict:
+#         """
+#         this method getting the data of the both apis as a dict where the keys are the name of the api and the values is the api json data
 
-        Args:
-            start_date(str):
-                the start date of the api request
-            end_date(str):
-                the end date of the api request
-            ip(str):
-                the ip of the user that will be used to search in the api by location
+#         Args:
+#             start_date(str):
+#                 the start date of the api request
+#             end_date(str):
+#                 the end date of the api request
+#             ip(str):
+#                 the ip of the user that will be used to search in the api by location
 
-        Returns:
-            dict of the json data
-        """
+#         Returns:
+#             dict of the json data
+#         """
 
-        weather_api_data = self.weatherapi_class.weather_by_week(params=params)
-        openmateo_api_data = self.openmateo_class.weather_by_week(params=params)
-        weather_week_data = {"weatherapi":weather_api_data,"openmateo":openmateo_api_data}
+#         weather_api_data = self.weatherapi_class.weather_by_week(params=params)
+#         openmateo_api_data = self.openmateo_class.weather_by_week(params=params)
+#         weather_week_data = {"weatherapi":weather_api_data,"openmateo":openmateo_api_data}
     
-        return weather_week_data 
+#         return weather_week_data 
 
 
 

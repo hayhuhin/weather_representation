@@ -1,11 +1,10 @@
 
 from api_application.redis_module import RedisConnector
 # from api_application.api_module import ApiCaller
-from api_application.json_filter import JsonFilter
+# from backend.flask_application.api_application.api.json_filter import JsonFilter
 from api_application.graph_module import GraphRepresantation
-from api_application.api_module import ApiController
-from config import WEATHERAPI_API_CONFIG,OPENMATEO_API_CONFIG
-
+# from backend.flask_application.api_application.api.api_module import ApiController
+from api_application.api.api_adapter import ApiFacade
 
 
 # from config import CURR_DIR,SECRET_FLASK_KEY,HOST_URI,REDIS_PORT,REDIS_USERNAME,REDIS_PASSWORD,WEATHERAPI_API_KEY,WEATHERAPI_API_URI
@@ -19,29 +18,37 @@ from config import WEATHERAPI_API_CONFIG,OPENMATEO_API_CONFIG
 # self.api_2 = ApiCaller(uri=api_2_config["uri"],api_key=api_2_config["key"],source=api_2_config["source"])
 
 
+
+
 class ControllerClass:
     def __init__(self,redis_config:dict,test_mode:bool=False):
         self.redis = RedisConnector(host=redis_config["host"],port=redis_config["port"],username=redis_config["username"],password=redis_config["password"])
-        self.api = ApiController(openmateo_config=OPENMATEO_API_CONFIG,weatherapi_config=WEATHERAPI_API_CONFIG,test_mode=test_mode)
+        self.api_facade = ApiFacade()
         self.graph_repr = GraphRepresantation()
-        self.json = JsonFilter
-
+        self.user_ttl = redis_config["user_ttl"]
+        self.api_ttl = redis_config["api_ttl"]
 
 
     def first_time(self,start_date,end_date,ip):
-        required_data = {
+        params = {
             "start_date":start_date,
             "end_date":end_date,
             "ip":ip,
         }
 
-        api_data = self.api.day_data(params=required_data)
+
+        #*creating the request from the api's and then getting the data
+        self.api_facade.create_day_request(params=params)
+        day_data = self.api_facade.get_day_request()
+
         #this adding the cache data into the redis db
-        result = self.redis.set_key(key=ip,value={"user_data":api_data,"graph_repr":"day"})
+        result = self.redis.set_key(key=ip,value={"user_data":day_data,"graph_repr":"day"})
 
     
+
     def change_state(self,state:str,start_date:str,end_date:str,ip:str):
-        #first we checking if the user already sended api_1 request in the last 30 sec
+        #first we checking if the user already sent api request in the last 30 sec
+
         timer_is_set = self.redis.check_timer(key=ip)
         if timer_is_set:
             print(f"you have ttl and have to wait atleast {timer_is_set}")
@@ -50,35 +57,35 @@ class ControllerClass:
 
         if state == "week":
 
-            required_data = {
+            params = {
             "start_date":start_date,
             "end_date":end_date,
             "ip":ip,
             }
             
-            api_data = self.api.week_data(params=required_data)
+            api_data = self.api.week_data(params=params)
 
             #first we delete the existing data if any
-            delete_user = self.redis.clear_all(ip)
+            self.redis.clear_all(ip)
 
             #this adding the cache data into the redis db
-            self.redis.set_key(key=ip,value={"user_data":api_data,"graph_repr":"week"},timer=15)
+            self.redis.set_key(key=ip,value={"user_data":api_data,"graph_repr":"week"},timer=self.api_ttl)
             
         
         if state == "day":
 
-            required_data = {
+            params = {
             "start_date":start_date,
             "end_date":start_date,
             "ip":ip,
             }
-            api_data = self.api.day_data(params=required_data)
+            api_data = self.api.day_data(params=params)
             
             #first we delete the existing data if any
-            delete_user = self.redis.clear_all(ip)
+            self.redis.clear_all(ip)
 
             #this adding the cache data into the redis db
-            result = self.redis.set_key(key=ip,value={"user_data":api_data,"graph_repr":"day"},timer=15)
+            result = self.redis.set_key(key=ip,value={"user_data":api_data,"graph_repr":"day"},timer=self.api_ttl)
 
         
 

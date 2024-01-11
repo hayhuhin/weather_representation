@@ -1,11 +1,10 @@
-from .serializer import WeekDataSerializer
+from backend.flask_application.api_application.api.serializer import WeekDataSerializer
 
 
 
 class JsonFilter:
     def __init__(self,json_data) -> None:
         self.json = json_data
-        print(self.json)
         self.serializer = WeekDataSerializer(location="london",weather_data=self.json["forecast"]["forecastday"])
 
 
