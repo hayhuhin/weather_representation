@@ -94,6 +94,7 @@ class WeatherApi:
             start_date = params["start_date"]
             end_date = params["end_date"]
             user_ip = params["ip"]
+
             get_query = f"{self.uri}/forecast.json?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
 
             api_request = requests.get(get_query).json()
@@ -101,7 +102,14 @@ class WeatherApi:
 
             filtered_data = json_filter.specific_day_data(date=params["start_date"])
             
-            return filtered_data
+
+            del filtered_data["source"]
+
+            weatherapi_min_max = self.calculate_min_max(filtered_data)
+
+            filtered_data["source"] = "weatherapi.com"
+            final_data = {**filtered_data,"weatherapi_min_max":weatherapi_min_max,"graph_repr":"day","source":"openmateo.com"}
+            return final_data
 
 
 
@@ -127,6 +135,7 @@ class WeatherApi:
 
 
         #* this is returning test data if the test_mode is True
+
         if self.test_mode:
             test_data = self.return_test_data()
             json_filter = JsonFilter(json_data=test_data)
@@ -136,7 +145,7 @@ class WeatherApi:
 
         #* this is running before each api call
         if self.queue_micro_service():
-
+        
             start_date = params["start_date"]
             end_date = params["end_date"]
             user_ip = params["ip"]
@@ -156,10 +165,7 @@ class WeatherApi:
         Returns:
             json min max data of each category in the daily json
         """
-
         dict_data = {}
-
-
         for items in json_data:
             values = json_data[items]["y"]
 
@@ -329,15 +335,17 @@ class OpenMeteoApi:
             }
 
 
+            openmateo_min_max = self.calculate_min_max(openmateo_dict)
+
+            # openmateo = {**openmateo_dict,"graph_repr":"day","source":"openmateo.com"}
+
+            final_data = {**openmateo_dict,"openmateo_min_max":openmateo_min_max,"graph_repr":"day","source":"openmateo.com"}
+
+            return final_data
 
 
-            openmateo = {**openmateo_dict,"graph_repr":"day","source":"openmateo.com"}
 
-            return openmateo
-
-
-
-    def weather_by_week(self,params) -> pd.DataFrame:
+    def weather_by_week(self,params) -> dict:
         """
         this method gets the dayly general data from the specific week
 
@@ -348,10 +356,9 @@ class OpenMeteoApi:
 
 
             api_params = {
-            "past_days":6,
             "hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
             "daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
-            "forecast_days":1,
+            "forecast_days":7,
             }
             lan_lat = self.ip_translator(params["ip"])
             api_params["longitude"] = lan_lat["longitude"]
@@ -409,6 +416,7 @@ class OpenMeteoApi:
                 }
                 
                 # Add the nested dictionary to the main dictionary with date as the key
+
                 openmateo_dict[date_str] = date_data
             return openmateo_dict
 
@@ -421,15 +429,9 @@ class OpenMeteoApi:
             dict with the values of the data
         """
 
-        source = json_data["source"]
-        graph_repr = json_data["graph_repr"]
 
 
         dict_data = {}
-        json_data.pop("graph_repr")
-        json_data.pop("source")
-        # print(json_data)
-
 
         for items in json_data:
             values = json_data[items]["y"]

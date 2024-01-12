@@ -1,23 +1,6 @@
-
 from api_application.redis_module import RedisConnector
-# from api_application.api_module import ApiCaller
-# from backend.flask_application.api_application.api.json_filter import JsonFilter
 from api_application.graph_module import GraphRepresantation
-# from backend.flask_application.api_application.api.api_module import ApiController
 from api_application.api.api_adapter import ApiFacade
-
-
-# from config import CURR_DIR,SECRET_FLASK_KEY,HOST_URI,REDIS_PORT,REDIS_USERNAME,REDIS_PASSWORD,WEATHERAPI_API_KEY,WEATHERAPI_API_URI
-
-# # redis_client = RedisConnector(host=HOST_URI,port=REDIS_PORT,username=REDIS_USERNAME,password=REDIS_PASSWORD)
-# api_connector = ApiCaller(uri=WEATHERAPI_API_URI,api_key=WEATHERAPI_API_KEY,source="weather_api")
-# graph_repr = GraphRepresantation()
-
-# self.api_1 = ApiCaller(uri=api_1_config["uri"],api_key=api_1_config["key"],source=api_1_config["source"],test_mode=test_mode)
-# self.api = ApiController(openmateo_config=OPENMATEO_API_CONFIG,weatherapi_config=WEATHERAPI_API_CONFIG)
-# self.api_2 = ApiCaller(uri=api_2_config["uri"],api_key=api_2_config["key"],source=api_2_config["source"])
-
-
 
 
 class ControllerClass:
@@ -29,7 +12,7 @@ class ControllerClass:
         self.api_ttl = redis_config["api_ttl"]
 
 
-    def first_time(self,start_date,end_date,ip):
+    def first_time(self,start_date,end_date,ip) -> None:
         params = {
             "start_date":start_date,
             "end_date":end_date,
@@ -43,11 +26,9 @@ class ControllerClass:
 
         #this adding the cache data into the redis db
         result = self.redis.set_key(key=ip,value={"user_data":day_data,"graph_repr":"day"})
-        print(day_data)
 
     
-
-    def change_state(self,state:str,start_date:str,end_date:str,ip:str):
+    def change_state(self,state:str,start_date:str,end_date:str,ip:str) -> None:
         #first we checking if the user already sent api request in the last 30 sec
 
         #!need to have another class that have the current state of the application
@@ -65,14 +46,14 @@ class ControllerClass:
             "ip":ip,
             }
             
-            self.api_facade.create_day_request()
+            self.api_facade.create_week_request()
             week_data = self.api_facade.get_week_request(params=params)
 
             #first we delete the existing data if any
             self.redis.clear_all(ip)
 
             #this adding the cache data into the redis db
-            self.redis.set_key(key=ip,value={"user_data":api_data,"graph_repr":"week"},timer=self.api_ttl)
+            self.redis.set_key(key=ip,value={"user_data":week_data,"graph_repr":"week"},timer=self.api_ttl)
             
         
         if state == "day":
@@ -93,14 +74,11 @@ class ControllerClass:
             day_data = self.api_facade.get_day_request(params=params)
         
 
-    #TODO add the option to change the graph repr from line to bar graph
-    def day_view(self,required_data,graph_type:str="line_graph_compared") -> str:
+    def day_view(self,required_data,graph_type:str="line_graph_compared") -> dict:
 
 
 
         # print(required_data["user_data"]["openmateo"])
-        print(required_data)
-
         source1 = required_data["user_data"]["weatherapi"]["source"]
         source2 = required_data["user_data"]["openmateo"]["source"]
 
@@ -143,9 +121,8 @@ class ControllerClass:
         feelslike_c_html = self.graph_repr.graph_options(graph_type=graph_type,dict_values=feelslike_c,graph_repr="1_row",path="")
 
 
-
-        openmateo_min_max = required_data["user_data"]["openmateo_min_max"]
-        weatherapi_min_max = required_data["user_data"]["weatherapi_min_max"]
+        openmateo_min_max = required_data["user_data"]["openmateo"]["openmateo_min_max"]
+        weatherapi_min_max = required_data["user_data"]["weatherapi"]["weatherapi_min_max"]
 
 
 
@@ -207,17 +184,12 @@ class ControllerClass:
                     },
             }
 
+
         return weather_day_graph
 
 
-    def week_view(self,required_data):
+    def week_view(self,required_data) ->dict:
 
-        #must be fixed because there is no realy graph is needed and only cards
-        #to display the different weathers
-        # redis_dict = self.redis.get(key=self.ip)
-        #*this dict is store as a nested dict 
-        #*main key is {date:{"maxtemp":"10","mintemp":-10}}
-        
         return required_data
 
 

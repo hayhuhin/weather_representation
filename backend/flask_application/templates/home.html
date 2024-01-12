@@ -1,4 +1,56 @@
 {% extends "base.html" %}
 {% block title %}home page{% endblock title %}
 {% block content %}
+<!-- Page Content -->
+<div class="container mt-5 px-4">
+    <!-- Description Section -->
+    <h1 class="mt-4 py-3">Welcome to my Weather Comparison Web Application</h1>
+    <div class="row p-3 gx-5">
+        <div class="col-lg-6">
+            <p class="lead">Empowering you with accurate and up-to-date weather insights from two leading APIs: weatherapi and openmeteo.
+                <br>Compare temperature, chance of rain, and feels-like temperature for informed decision-making.</p>
+            
+            <p><strong>Explore hourly weather data for today and seamlessly switch between daily and weekly views. Our application refreshes data every 24 hours to provide the latest forecasts.</strong></p>
+        </div>
+        <div class="col-lg-6">
+            <img src={{url_for('static', filename='tree_image.jpg')}} style="width:300;height:300px" class="img-thumbnail" alt="rainy-tree-image">
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mt-4">
+        <div class="col-lg-4 p-3">
+            <h2 class="py-3">Dual API Comparison</h2>
+            <p>Compare weather forecasts between weatherapi and openmeteo for a nuanced understanding of predictions and reliability.</p>
+
+                <img src={{url_for('static', filename='coding_image.jpg')}} style="width:300;height:300px" class="img-thumbnail" alt="rainy-tree-image">
+
+        </div>
+        <div class="col-lg-4 p-3">
+            <h2 class="py-3">Daily and Weekly Views</h2>
+            <p>Switch effortlessly between daily and weekly views, providing a comprehensive overview of upcoming weather patterns.</p>
+            <img src={{url_for('static', filename='day_week.jpg')}} style="width:300;height:300px" class="img-thumbnail" alt="rainy-tree-image">
+
+        </div>
+        <div class="col-lg-4 p-3">
+            <h2 class="py-3">API Refresh Every 24 Hours</h2>
+            <p>Data is dynamically fetched from the APIs every 24 hours to ensure you have the latest and most reliable weather information.</p>
+            <img src={{url_for('static', filename='time.jpg')}} style="width:300;height:300px" class="img-thumbnail" alt="rainy-tree-image">
+
+        </div>
+    </div>
+
+    <!-- How to Use Section -->
+    <div class="row mt-4">
+        <div class="col-lg-5 p-3">
+        <h1 class="py-3">How to Use</h1>
+        <img src={{url_for('static', filename='how_to.jpg')}} style="width:300;height:300px" class="img-thumbnail" alt="rainy-tree-image">
+
+        </div>
+        <div class="col-lg-6 p-3" style="margin-top:6rem">
+            <p>Explore the various functionalities using the intuitive navigation bar.<br> Engage with interactive charts to tailor your weather analysis to your specific needs.</p>
+            <p>Change your view, explore different timeframes, and compare data points effortlessly to stay one step ahead of the elements.</p>
+        </div>
+    </div>
+</div>
 {% endblock content %}

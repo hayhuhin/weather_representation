@@ -18,10 +18,14 @@ app.secret_key = SECRET_FLASK_KEY
 controller = ControllerClass(redis_config=REDIS_CONFIG,test_mode=False)
 week_dates =  CustomTime().week_reversed()
 
-
 local_ip = "8.8.8.8"
 
+@app.route("/",methods=["GET"])
+def main():
+    return redirect(url_for("home_page"))
 
+
+#*TESTING ONLY. comment it in prod
 @app.route("/redis",methods=["GET"])
 def redis():
     redis_cache = controller.redis.get("8.8.8.8")
@@ -33,12 +37,14 @@ def redis():
 
 
 
+#*TESTING ONLY. comment it in prod
 @app.route("/clear_cache",methods=["GET"])
 def clear_cache():
     controller.redis.clear_all("8.8.8.8")
     controller.redis.clear_all("127.0.0.1")
     controller.redis.clear_all(request.remote_addr)
     return f"ip (8.8.8.8,127.0.0.1,external ip) redis deleted"
+
 
 
 @app.route("/homepage",methods=["GET"])
@@ -104,14 +110,14 @@ def weather_info():
 @app.route('/weather/day',methods=["GET"])
 def display_day():
     user_ip = local_ip
-    controller.change_state(state="day",start_date=week_dates[-1],end_date=week_dates[0],ip=user_ip)
+    controller.change_state(state="day",start_date=week_dates[0],end_date=week_dates[-1],ip=user_ip)
     return redirect(url_for('weather_info'))
 
 
 @app.route('/weather/week',methods=["GET"])
 def display_week():
     user_ip = local_ip
-    controller.change_state(state="week",start_date=week_dates[-1],end_date=week_dates[0],ip=user_ip)
+    controller.change_state(state="week",start_date=week_dates[0],end_date=week_dates[-1],ip=user_ip)
     return redirect(url_for('weather_info'))
     
 
