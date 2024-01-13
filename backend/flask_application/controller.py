@@ -62,16 +62,14 @@ class ControllerClass:
             "start_date":start_date,
             "end_date":start_date,
             "ip":ip,
-            }
-            api_data = self.api.day_data(params=params)
-            
+            }            
             #first we delete the existing data if any
             self.redis.clear_all(ip)
 
             #this adding the cache data into the redis db
-            result = self.redis.set_key(key=ip,value={"user_data":api_data,"graph_repr":"day"},timer=self.api_ttl)
             self.api_facade.create_day_request()
             day_data = self.api_facade.get_day_request(params=params)
+            result = self.redis.set_key(key=ip,value={"user_data":day_data,"graph_repr":"day"},timer=self.api_ttl)
         
 
     def day_view(self,required_data,graph_type:str="line_graph_compared") -> dict:

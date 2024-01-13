@@ -7,27 +7,40 @@
 <div class="container"><!-- the main container of the whole weather page-->
 
 
-<!-- data bar -->
 
-<!-- -->
-
-<h1>{{content.context}}</h1>
-  <figcaption class="blockquote-footer">
+    <!-- Weather Page Title -->
+    <div class="row">
+        <div class="col-lg-12 text-start">
+            <h1 class="mt-4 f-upper">{{content.context}} Page</h1>
+  <figcaption class="blockquote-footer p-2">
     today date is 2024-01-10
   </figcaption>
+        </div>
+    </div>
+
+    <!-- View Options Explanation -->
+    <div class="row mt-4">
+        <div class="col-lg-5 p-3">
+            <h2>Graphical Representation</h2>
+            <p>Explore the weather data through five informative graphs, providing a visual and intuitive understanding of temperature, chance of rain, and feels-like temperature.<br>Each graph offers a detailed hourly breakdown for today.</p>
+            <img src={{url_for('static', filename='graph_repr.jpg')}} class="img-fluid" alt="Graphical Representation">
+        </div>
+        <div class="col-lg-5 p-3">
+            <h2>Tabular Data</h2>
+            <p>For a comprehensive weekly overview, switch to the tabular view.<br>Two tables display the weekly weather data for each API, allowing you to compare forecasts at a glance.Dive into the details to plan your week effectively.</p>
+            <img src={{url_for('static', filename='tabular.jpg')}} class="img-fluid" alt="Tabular Data">
+        </div>
+    </div>
+
+<h2 class="mt-4 f-upper">data representation</h2>
 <p>This information is for study purpose only.</p>
-<p>
-the information is provided from two open source api's and made to compare
-the differences of each api when trying to get the same information at the same time,
-<a href="/homepage">for more information.</a>
-</p>
 
 
 {% if content.weather_day_graph %}
     {% for graph in content.weather_day_graph %}
 
         <div class="graph_main border rounded border-1 p-3 my-2" style="width-max:900px;width-min:400px;width:930px;background-color:#262a2e" >
-            <h3>{{content.weather_day_graph[graph].data.name}}</h3>
+            <h5>{{content.weather_day_graph[graph].data.name}}</h5>
 
         <div class="border rounded m-2 p-2 " style="background-color:#212529">
         <table class="table table-hover">
@@ -87,7 +100,7 @@ the differences of each api when trying to get the same information at the same 
 
 {% if content.week_data %}
     {% for graph in content.week_data.user_data %}
-        <h1>{{graph}}</h1>
+        <h5 class="mt-4 f-upper p-3">{{graph}}</h5>
 
         <table class="table table-bordered w-50">
               <thead>
