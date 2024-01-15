@@ -7,12 +7,6 @@ config_path = Path(__file__).resolve().parent.parent.parent.parent
 env_path = config_path/"env"/".env"
 load_dotenv(dotenv_path=env_path)
 
-
-# HOST_URI = os.environ.get("REDIS_HOST_URI")
-# REDIS_PORT = os.environ.get("REDIS_PORT")
-# REDIS_USERNAME = os.environ.get("REDIS_USERNAME")
-# REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
-
 #weatherapi.com env
 WEATHERAPI_API_URI = os.environ.get("WEATHERAPI_API_URI")
 WEATHERAPI_API_KEY = os.environ.get("WEATHERAPI_API_KEY")
