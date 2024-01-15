@@ -30,7 +30,7 @@ for installing the application and using it with the current applications you wi
 the local envrinment:<br>
 - weatherapi.com : this is one of the API's the application is using to get the data.
 - open-meteo.com : this is one of the API's the application is using to get the data.
-- ipgeolocation.com : this is needed to get the geolocation by the ip because the open-meteo endpoints are accepting only 
+- ipgeolocation.com : this is needed to get the geolocation of the user's ip address to show the weather information by the location
   second 
   third
 
