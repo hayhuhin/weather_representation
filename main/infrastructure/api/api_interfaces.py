@@ -193,7 +193,6 @@ class WeatherApi:
             return filtered_data
             
 
-
     def calculate_min_max(self,json_data:dict) -> dict:
         """
         this method returns the min and max of each category in the json
