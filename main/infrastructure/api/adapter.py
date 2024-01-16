@@ -1,6 +1,6 @@
 from typing import Any
-from .api_module import OpenMeteoApi,WeatherApi
-from .config.config import OPENMATEO_API_CONFIG,WEATHERAPI_API_CONFIG
+from api_interfaces import OpenMeteoApi,WeatherApi
+from config.config import OPENMATEO_API_CONFIG,WEATHERAPI_API_CONFIG
 
 
 class ApiAdapter:

@@ -6,21 +6,18 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
-from .json_filter import JsonFilter
-from .ip_converter import IpConverter
-
-
-
-        # now = datetime.strptime(start_date, "%Y-%m-%d")
-        # timestamp = datetime.timestamp(now)
-
-        # print(timestamp)
-
-
-
-
+from json_serializer import JsonFilter
 load_dotenv()
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+
+# class IAPI:
+
+
+
+
+
 
 
 

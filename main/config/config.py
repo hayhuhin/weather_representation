@@ -1,15 +1,21 @@
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
-CURR_DIR = os.path.dirname(os.path.abspath(__file__))
-load_dotenv(dotenv_path=CURR_DIR+"/env/.env")
+
+env_path = Path(__file__).resolve().parent.parent/"env"/".env"
+#loading env variables
+load_dotenv(dotenv_path=env_path)
 
 SECRET_FLASK_KEY = os.getenv('SECRET_FLASK_KEY')
 
+#redis configuration structure
 HOST_URI = os.environ.get("REDIS_HOST_URI")
 REDIS_PORT = os.environ.get("REDIS_PORT")
 REDIS_USERNAME = os.environ.get("REDIS_USERNAME")
 REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+
+#redis configuration structure
 REDIS_CONFIG = {
     "host":HOST_URI,
     "port":REDIS_PORT,
