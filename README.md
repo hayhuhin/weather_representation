@@ -118,7 +118,8 @@ The main purpose is basicly to show you that there are always a differences in a
 *Description: Visual representation of the weather sorted by days, starting from the current day.*
 
 
-##Architecture
+## Architecture
+
 now the intersting part of the application comes.
 
 ### Application Design Diagram
