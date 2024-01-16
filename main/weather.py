@@ -1,15 +1,12 @@
 import os,json
 from flask import Flask, render_template_string, request, session, jsonify,render_template,redirect, url_for
-from api_application.datetimes_module import CustomTime
+from infrastructure.modules.datetimes_module import CustomTime
 from controller import ControllerClass
-from config import SECRET_FLASK_KEY,REDIS_CONFIG
+from config.config import SECRET_FLASK_KEY,REDIS_CONFIG
 
 
 
 #flass app configuration and initialisation
-
-
-
 
 app = Flask(__name__)
 app.secret_key = SECRET_FLASK_KEY

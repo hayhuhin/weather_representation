@@ -1,6 +1,6 @@
-from api_application.redis_module import RedisConnector
-from api_application.graph_module import GraphRepresantation
-from api_application.api.api_adapter import ApiFacade
+from infrastructure.modules.redis_module import RedisConnector
+from infrastructure.modules.graph_module import GraphRepresantation
+from infrastructure.api.adapter import ApiFacade
 
 
 class ControllerClass:
@@ -12,6 +12,12 @@ class ControllerClass:
         self.api_ttl = redis_config["api_ttl"]
 
 
+
+
+        #initialising the day requests and the week requests
+        self.initialised_apis = self.api_facade.register_api_methods()
+        
+
     def first_time(self,start_date,end_date,ip) -> None:
         params = {
             "start_date":start_date,
@@ -21,7 +27,6 @@ class ControllerClass:
 
 
         #*creating the request from the api's and then getting the data
-        self.api_facade.create_day_request()
         day_data = self.api_facade.get_day_request(params=params)
 
         #this adding the cache data into the redis db
@@ -46,7 +51,6 @@ class ControllerClass:
             "ip":ip,
             }
             
-            self.api_facade.create_week_request()
             week_data = self.api_facade.get_week_request(params=params)
 
             #first we delete the existing data if any
@@ -67,13 +71,11 @@ class ControllerClass:
             self.redis.clear_all(ip)
 
             #this adding the cache data into the redis db
-            self.api_facade.create_day_request()
             day_data = self.api_facade.get_day_request(params=params)
             result = self.redis.set_key(key=ip,value={"user_data":day_data,"graph_repr":"day"},timer=self.api_ttl)
         
 
     def day_view(self,required_data,graph_type:str="line_graph_compared") -> dict:
-
 
 
         # print(required_data["user_data"]["openmateo"])

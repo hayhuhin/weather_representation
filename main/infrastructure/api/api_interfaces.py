@@ -4,7 +4,7 @@ import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
-from json_serializer import JsonFilter
+from .json_serializer import filltered_day_json,filltered_week_json
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -93,8 +93,8 @@ class WeatherApi:
         if self.test_mode:
             test_data = self.return_test_data()
 
-            json_filter = JsonFilter(json_data=test_data)
-            filtered_data = json_filter.specific_day_data(date=params["start_date"])            
+            
+            filtered_data = filltered_day_json(retrieved_json=test_data,targeted_day=params["start_date"])
             return filtered_data
 
 
@@ -118,11 +118,9 @@ class WeatherApi:
             #requesting the api
             api_request = requests.get(get_query).json()
 
-            #filtering it for my app purpose
-            json_filter = JsonFilter(json_data=api_request)
 
             #filtering for the dict inot day specific data
-            filtered_data = json_filter.specific_day_data(date=params["start_date"])
+            filtered_data = filltered_day_json(retrieved_json=api_request,targeted_day=params["start_date"])
 
             #calculating the min max data for the insights of the application
             weatherapi_min_max = self.calculate_min_max(filtered_data)
@@ -163,8 +161,7 @@ class WeatherApi:
 
         if self.test_mode:
             test_data = self.return_test_data()
-            json_filter = JsonFilter(json_data=test_data)
-            filtered_data = json_filter.specific_week_data(start_date=params["start_date"],end_date=params["end_date"])            
+            filtered_data = filltered_week_json(retrieved_json=test_data)            
             return filtered_data
         
 
@@ -188,12 +185,9 @@ class WeatherApi:
             
             #sending the string inot the api call
             api_request = requests.get(get_query).json()
-            
-            #filtering the data as need for the we representation
-            json_filter = JsonFilter(json_data=api_request)
 
             #now filterring it as the week data json
-            filtered_data = json_filter.specific_week_data(start_date=params["start_date"],end_date=params["end_date"])
+            filtered_data = filltered_week_json(retrieved_json=api_request)
             
             #returning the filtered data as a dict
             return filtered_data
@@ -562,3 +556,5 @@ class OpenMeteoApi:
        
         #returning the dict data that will be represented in the weather application
         return dict_data
+
+
