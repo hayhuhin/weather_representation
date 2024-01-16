@@ -16,7 +16,7 @@ The primary goal of the Weather Comparison Web Application is to empower users w
 - [Contributing](#contributing)
 - [License](#license)
 
-## Usage for :
+## Usage
 #### Clients
 simple weather application that shows data of two different weather apis and the client can see the differences.
 
