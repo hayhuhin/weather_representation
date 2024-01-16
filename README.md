@@ -95,7 +95,7 @@ The main purpose is basicly to show you that there are always a differences in a
 
 ### 1. Home Screen
 
-![Home Screen](main/static/first_page2.png)
+![Home Screen](static/first_page2.PNG)
 
 *Description: Overview of the main screen with description of the purpose and the application.*
 
