@@ -73,7 +73,7 @@ now we almost ready.
 to be continued
 
 
-##Features
+## Features
 ### 1.API Limited Calles.
 
 Weatherapi API is limited to 1000 calls per month per user so each ip address that access the website is stored with the data that it got.
@@ -91,7 +91,7 @@ Visualize weather patterns and explore different regions using an interactive Gr
 The main purpose is basicly to show you that there are always a differences in a forecast even if they updating the data its still not so accurate and not the same. 
 
 
-##Screenshots
+## Screenshots
 
 ### 1. Home Screen
 
