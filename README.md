@@ -13,7 +13,6 @@ The primary goal of the Weather Comparison Web Application is to empower users w
 - [Features](#features)
 - [Screenshots](#screenshots)
 - [Architecture](#architecture)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Usage
@@ -117,3 +116,47 @@ The main purpose is basicly to show you that there are always a differences in a
 ![week view](screenshots/notifications.png)
 
 *Description: Visual representation of the weather sorted by days, starting from the current day.*
+
+
+##Architecture
+now the intersting part of the application comes.
+
+### Application Design Diagram
+![application diagram](screenshots/interactive_map.png)
+
+as you can see the top layer of the application is designed as Model View Controller but in the inside application im using more design patterns for code readability and simplicity.
+
+**MVC(Model View Controller) design pattern diagram**
+![application diagram](screenshots/interactive_map.png)
+   - Serves as the core of the application, handling requests from the UI.
+   - Retrieves weather data from external APIs or data sources.
+
+**Adapter design pattern diagram**
+![application diagram](screenshots/interactive_map.png)
+   - Serves as the core of the application, handling requests from the UI.
+   - Retrieves weather data from external APIs or data sources.
+
+**Facade design pattern diagram**
+![application diagram](screenshots/interactive_map.png)
+   - Serves as the core of the application, handling requests from the UI.
+   - Retrieves weather data from external APIs or data sources.
+
+
+### Component Diagram
+
+![Component Diagram](architecture/component_diagram.png)
+
+*Description: The component diagram illustrates the relationships between different components of the Weather Application.*
+
+In the diagram:
+
+- The arrows represent the flow of data or requests between components.
+- Each component is labeled with its specific responsibility.
+- The arrows represent the flow of data or requests between components.
+- Each component is labeled with its specific responsibility.
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
