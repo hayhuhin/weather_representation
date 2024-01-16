@@ -101,19 +101,19 @@ The main purpose is basicly to show you that there are always a differences in a
 
 ### 2. Weather Page (Default Day View)
 
-![weather page](screenshots/5_day_forecast.png)
+![weather page](screenshots/weather_page.PNG)
 
 *Description: Visual representation of the current day weather by the hours, this is the basic representation.*
 
 ### 3. Display
 
-![display bar](screenshots/interactive_map.png)
+![display bar](screenshots/navbar.PNG)
 
 *Description: you can change it to see weather information of the whole week starting from the current day.*
 
 ### 4. weather Page (Week View)
 
-![week view](screenshots/notifications.png)
+![week view](screenshots/weather_page.PNG)
 
 *Description: Visual representation of the weather sorted by days, starting from the current day.*
 
