@@ -123,22 +123,29 @@ The main purpose is basicly to show you that there are always a differences in a
 now the intersting part of the application comes.
 
 ### Application Design Diagram
+
 ![application diagram](screenshots/interactive_map.png)
 
 as you can see the top layer of the application is designed as Model View Controller but in the inside application im using more design patterns for code readability and simplicity.
 
 **MVC(Model View Controller) design pattern diagram**
+
 ![application diagram](screenshots/interactive_map.png)
+
    - Serves as the core of the application, handling requests from the UI.
    - Retrieves weather data from external APIs or data sources.
 
 **Adapter design pattern diagram**
+
 ![application diagram](screenshots/interactive_map.png)
+
    - Serves as the core of the application, handling requests from the UI.
    - Retrieves weather data from external APIs or data sources.
 
 **Facade design pattern diagram**
+
 ![application diagram](screenshots/interactive_map.png)
+
    - Serves as the core of the application, handling requests from the UI.
    - Retrieves weather data from external APIs or data sources.
 
