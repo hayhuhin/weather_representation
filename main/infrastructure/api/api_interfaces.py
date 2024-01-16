@@ -1,26 +1,46 @@
-from dotenv import load_dotenv
 import os,json
 import requests
-from datetime import datetime
 import openmeteo_requests
 import requests_cache
 import pandas as pd
 from retry_requests import retry
 from json_serializer import JsonFilter
-load_dotenv()
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 
-# class IAPI:
 
 
 
+#ip converter to geo location of latitude and longtitude
+class IpConverter:
+    def __init__(self,api_key,ip_addr):
+        self.api_key = api_key
+        self.ip = ip_addr
 
 
+    def queue_micro_service(self):
+        print("ip api called")
+        
+        return True
+    
+
+    def geo_location(self):
+        if self.queue_micro_service:
+            
+            query = f'https://api.ipgeolocation.io/timezone?apiKey={self.api_key}&ip={self.ip}'
+            
+            geo_data = {}
+            latitude_api_data = requests.get(query).json()["geo"]["latitude"]
+            longitude_api_data = requests.get(query).json()["geo"]["longitude"]
+
+            geo_data["latitude"] = latitude_api_data
+            geo_data["longitude"] = longitude_api_data
+
+            return geo_data
 
 
-
+#weatherapi API class
 class WeatherApi:
     """
     this class have methods that sending api requests to the api server by the user
@@ -84,28 +104,36 @@ class WeatherApi:
             basic_keys = ["start_date","end_date","ip"]
             for keys in basic_keys:
                 if keys not in params.keys():
-                    weather_default = self.weather_default()
-                    return weather_default
+                    #this meaning the format of the dict is not correct
+                    raise ValueError("the dict is not structured the right way")
 
-
+            #getting the dict values
             start_date = params["start_date"]
             end_date = params["end_date"]
             user_ip = params["ip"]
 
+            #creating the get api call string
             get_query = f"{self.uri}/forecast.json?key={self.key}&q={user_ip}&dt={start_date}&end_dt={end_date}"
 
+            #requesting the api
             api_request = requests.get(get_query).json()
+
+            #filtering it for my app purpose
             json_filter = JsonFilter(json_data=api_request)
 
+            #filtering for the dict inot day specific data
             filtered_data = json_filter.specific_day_data(date=params["start_date"])
-            
 
-            del filtered_data["source"]
-
+            #calculating the min max data for the insights of the application
             weatherapi_min_max = self.calculate_min_max(filtered_data)
 
+            #adding the source into the dict
             filtered_data["source"] = "weatherapi.com"
+
+            #now creating the final data structured in the wanted manner for the website
             final_data = {**filtered_data,"weatherapi_min_max":weatherapi_min_max,"graph_repr":"day","source":"openmateo.com"}
+            
+            #returning the data as a dict
             return final_data
 
 
@@ -138,30 +166,50 @@ class WeatherApi:
             json_filter = JsonFilter(json_data=test_data)
             filtered_data = json_filter.specific_week_data(start_date=params["start_date"],end_date=params["end_date"])            
             return filtered_data
+        
+
+        basic_keys = ["start_date","end_date","ip"]
+        for keys in basic_keys:
+            if keys not in params.keys():
+                #this meaning the format of the dict is not correct
+                raise ValueError("the dict is not structured the right way")
 
 
         #* this is running before each api call
         if self.queue_micro_service():
         
+            #getting the dict values
             start_date = params["start_date"]
             end_date = params["end_date"]
             user_ip = params["ip"]
 
+            #creating the api call string
             get_query = f"{self.uri}/forecast.json?key={self.key}&q={user_ip}&days=7"
+            
+            #sending the string inot the api call
             api_request = requests.get(get_query).json()
+            
+            #filtering the data as need for the we representation
             json_filter = JsonFilter(json_data=api_request)
+
+            #now filterring it as the week data json
             filtered_data = json_filter.specific_week_data(start_date=params["start_date"],end_date=params["end_date"])
+            
+            #returning the filtered data as a dict
             return filtered_data
             
 
 
-    def calculate_min_max(self,json_data):
+    def calculate_min_max(self,json_data:dict) -> dict:
         """
         this method returns the min and max of each category in the json
 
         Returns:
             json min max data of each category in the daily json
         """
+
+        #the dict is with th
+        
         dict_data = {}
         for items in json_data:
             values = json_data[items]["y"]
@@ -198,7 +246,7 @@ class WeatherApi:
         return dict_data
 
 
-    def queue_micro_service(self):
+    def queue_micro_service(self) -> bool:
         """
         this method can have microservices that have to run before each api call.
         for now it only prints that the api called
@@ -221,7 +269,7 @@ class WeatherApi:
             return json_data
 
 
-
+#openmeteo API class 
 class OpenMeteoApi:
 
     def __init__(self,uri:str,geo_api_key:str,api_key:str="no key",test_mode:bool=False) -> dict:
@@ -262,42 +310,76 @@ class OpenMeteoApi:
         self.name = "openmateo"
 
 
-    def queue_micro_service(self):
+    def queue_micro_service(self) -> bool:
+        """
+        most purpose of the function is just to print if the api is called or not
+        """
         print("api called")
         return True
 
 
-    def ip_translator(self,ip):
+    def ip_translator(self,ip:str) ->dict:
+        """
+        this method is called the ipgeo location api  for getting the lantitude and longtitude 
+        of the IP address
+
+        Args:
+            ip(str):
+                simple IP V4 for example: 8.8.8.8
+        
+        Returns:
+            dict of the geolocation from this ip address
+            that structured like this:
+            {"latitude":"-15..12312312","longtitude":"114:12121"}
+            
+        """
+
+        #creating the instance of the ipconverter API class
         ip_converter_class = IpConverter(api_key=self.geo_api_key,ip_addr=ip)
+
+        #using one of its methods to get the dict lantitude and longtitude data
         geo_location = ip_converter_class.geo_location()
+        
+        #returning dict of tha lng and lon data
         return geo_location
 
 
-    def weather_by_day(self,params):
+    def weather_by_day(self,params:dict) -> dict:
         """
-        this method queries the database and returns the daily json that have a large data of each hour from the range od dates
-
+        this method is calling the API and retrieving the data,then restructuring it as
+        needed for the weather application
+        the data itself first is represented as dataframe and then transformed into a dict
         Returns:
-            api dataframe
+            filtered json data
         """
 
 
 
         if self.queue_micro_service():
 
-
+            #simple day data is needed for the api caling
             api_params = {
             "hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
             "daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
             "forecast_days":1,
             }
 
+            #here we are getting the longtitude and lantitude of the IP address
             lan_lat = self.ip_translator(params["ip"])
+            
+            #here im passing the result of the data above into the dict that will be added 
+            #into the api call string
             api_params["longitude"] = lan_lat["longitude"]
             api_params["latitude"] = lan_lat["latitude"]
+
+            #now creating the call to the openmeteo API and getting the first index of the result
             response = self.openmeteo.weather_api(url=self.uri, params=api_params)[0]
 
+            #this whole section is structuring the data as needed for our weather application
+            #getting the Hourly data from the openmeteo_requests library
             hourly = response.Hourly()
+
+            #then getting the data that we need specific for our weather app
             hourly_precipitation_probability = hourly.Variables(0).ValuesAsNumpy()
             hourly_apparent_temperature = hourly.Variables(1).ValuesAsNumpy()
             hourly_rain = hourly.Variables(2).ValuesAsNumpy()
@@ -310,18 +392,20 @@ class OpenMeteoApi:
             freq = pd.Timedelta(seconds = hourly.Interval()),
             inclusive = "left"
             )}
+
+            #structuring the data into the wanted dict 
             hourly_data["chance_of_rain"] = [float(f"{i:.2f}") for i in hourly_precipitation_probability]
             hourly_data["will_it_rain"] = [float(f"{i:.2f}") for i in hourly_rain]
             hourly_data["wind_kph"] = [float(f"{i:.2f}") for i in hourly_wind_speed_10m]
             hourly_data["temp_c"] = [float(f"{i:.2f}") for i in hourly_temperature_2m]
             hourly_data["feelslike_c"] = [float(f"{i:.2f}") for i in hourly_apparent_temperature]
 
-
+            #because we working with the openmeteo_requests it uses the pandas dataframe library
             df = pd.DataFrame(data = hourly_data)
 
 
 
-
+            #now we creating our last filtered data that we want to serve into our web application
             df['date'] = pd.to_datetime(df['date'], unit='ms')
             openmateo_dict = {
                 'temp_c': {'y': df['temp_c'].tolist(), 'x': df['date'].dt.strftime('%H:%M').tolist(), 'y_2': []},
@@ -332,39 +416,48 @@ class OpenMeteoApi:
             }
 
 
+            #here we getting the min max data that will be represented later in the application
             openmateo_min_max = self.calculate_min_max(openmateo_dict)
 
-            # openmateo = {**openmateo_dict,"graph_repr":"day","source":"openmateo.com"}
-
+            #the final structure of the dict that we want to serve into our weather app
             final_data = {**openmateo_dict,"openmateo_min_max":openmateo_min_max,"graph_repr":"day","source":"openmateo.com"}
 
+            #returning the data as a dict
             return final_data
 
 
 
-    def weather_by_week(self,params) -> dict:
+    def weather_by_week(self,params:dict) -> dict:
         """
         this method gets the dayly general data from the specific week
 
         Returns:
-            dataframe of the api responsed json
+            weather week json data
         """
         if self.queue_micro_service():
 
 
+            #this is the basic dict params that will be used inside the API call string
             api_params = {
             "hourly": ["precipitation_probability", "apparent_temperature","rain", "wind_speed_10m", "temperature_2m"],
             "daily": ["temperature_2m_max", "temperature_2m_min", "showers_sum","precipitation_probability_max","precipitation_probability_min","precipitation_hours", "wind_speed_10m_max"],
             "forecast_days":7,
             }
+
+            #here we are getting the geo location by an IP
             lan_lat = self.ip_translator(params["ip"])
+
+            #passing the result above into the dict params that will be sent into the API call string
             api_params["longitude"] = lan_lat["longitude"]
             api_params["latitude"] = lan_lat["latitude"]
 
+            #sending the request and retrieving the dataframe response and getting the first index(the data itself) 
             response = self.openmeteo.weather_api(self.uri, params=api_params)[0]
 
-            # Process daily data. The order of variables needs to be the same as requested.
+            # getting the Daily data from the openmeteo_requests library 
             daily = response.Daily()
+
+            #getting the specific needed data from the daily data
             daily_temperature_2m_max = daily.Variables(0).ValuesAsNumpy()
             daily_temperature_2m_min = daily.Variables(1).ValuesAsNumpy()
             daily_showers_sum = daily.Variables(2).ValuesAsNumpy()
@@ -373,7 +466,7 @@ class OpenMeteoApi:
             daily_precipitation_hours = daily.Variables(5).ValuesAsNumpy()
             daily_wind_speed_10m_max = daily.Variables(6).ValuesAsNumpy()
 
-
+            #simple daily data config data that will be passed for creating a dataframe data
             daily_data = {"date": pd.date_range(
                 start = pd.to_datetime(daily.Time(), unit = "s"),
                 end = pd.to_datetime(daily.TimeEnd(), unit = "s"),
@@ -381,24 +474,25 @@ class OpenMeteoApi:
                 inclusive = "left"
             )}
 
+            #renaming the data into another name for readability purposes
             daily_data["temp_c"] = daily_temperature_2m_max
-            # daily_data["temperature_2m_min"] = daily_temperature_2m_min
             daily_data["will_it_rain"] = daily_showers_sum
             daily_data["chance_of_rain"] = daily_precipitation_probability_max
-            # daily_data["precipitation_probability_min"] = daily_precipitation_probability_min
             daily_data["feelslike_c"] = daily_precipitation_hours
             daily_data["wind_kph"] = daily_wind_speed_10m_max
             
+            #creating dataframe object
             df = pd.DataFrame(data = daily_data)
 
             #! need to recheck the specific data i want to get\
             #* this is not a proper data(avgtemp is feelslike etc...)
 
+            #now filltering and restructuring the data into data that we will be passing into our weather application
             openmateo_dict = {}
             for index, row in df.iterrows():
                 date_str = str(row['date'].date())  # Convert date to string
                 
-                # Extract the relevant information from the DataFrame row
+                # Extract the relevant information from the DataFrame 
                 maxtemp_c = row['temp_c']
                 avgtemp_c = row['feelslike_c']
                 daily_will_it_rain = row['will_it_rain']
@@ -415,10 +509,12 @@ class OpenMeteoApi:
                 # Add the nested dictionary to the main dictionary with date as the key
 
                 openmateo_dict[date_str] = date_data
+
+                #returning the filltered and structured json data
             return openmateo_dict
 
 
-    def calculate_min_max(self,json_data):
+    def calculate_min_max(self,json_data:dict) ->dict:
         """
         this method calculates the min max of each field in the json and structuring new dict with the data
 
@@ -463,34 +559,6 @@ class OpenMeteoApi:
 
 
             dict_data[items] = {"data":{"min":(min_val,min_time),"max":(max_val,max_time)}},
+       
+        #returning the dict data that will be represented in the weather application
         return dict_data
-
-
-
-
-class IpConverter:
-    def __init__(self,api_key,ip_addr):
-        self.api_key = api_key
-        self.ip = ip_addr
-
-
-    def queue_micro_service(self):
-        print("ip api called")
-        
-        return True
-    
-
-    def geo_location(self):
-        if self.queue_micro_service:
-            
-            query = f'https://api.ipgeolocation.io/timezone?apiKey={self.api_key}&ip={self.ip}'
-            
-            geo_data = {}
-            latitude_api_data = requests.get(query).json()["geo"]["latitude"]
-            longitude_api_data = requests.get(query).json()["geo"]["longitude"]
-
-            geo_data["latitude"] = latitude_api_data
-            geo_data["longitude"] = longitude_api_data
-
-            return geo_data
-

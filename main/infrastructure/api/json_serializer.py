@@ -158,7 +158,7 @@ class JsonFilter:
         }
 
 
-        dict_data = {"temp_c":temp_c,"will_it_rain":will_it_rain,"chance_of_rain":chance_of_rain,"wind_kph":wind_kph,"feelslike_c":feelslike_c,"source":"openmateo.com"}
+        dict_data = {"temp_c":temp_c,"will_it_rain":will_it_rain,"chance_of_rain":chance_of_rain,"wind_kph":wind_kph,"feelslike_c":feelslike_c}
 
 
         return dict_data
