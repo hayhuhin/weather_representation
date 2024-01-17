@@ -26,8 +26,7 @@ The primary goal of the Weather Comparison Web Application is to empower users w
 
 ## Installation
 
-for installing the application and using it with the current applications you will have to create accounts in couple of websites(payment not needed!) and save the key of each api in 
-the local envrinment:<br>
+To install the application and utilize it alongside existing applications, you need to create accounts on a few websites (no payment required!). Save the API keys for each service in the local environment.:<br>
 - weatherapi.com : this is one of the API's the application is using to get the data.
 - open-meteo.com : this is one of the API's the application is using to get the data.
 - ipgeolocation.com : this is needed to get the geolocation of the user's ip address to show the weather information by the location.
