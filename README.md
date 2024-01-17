@@ -6,6 +6,7 @@
 This is my small weather web application that have the data from two different API's.
 The primary goal of the Weather Comparison Web Application is to empower users with a seamless and intuitive tool for comparing weather data from two distinct sources. By showcasing temperature, chance of rain, and feels-like temperature, web application data insures you that the data sometimes can be not so accurate.
 
+
 ## Table of Contents
 
 - [Usage](#usage)
@@ -14,6 +15,7 @@ The primary goal of the Weather Comparison Web Application is to empower users w
 - [Screenshots](#screenshots)
 - [Architecture](#architecture)
 - [License](#license)
+
 
 ## Usage
 #### Clients
@@ -24,9 +26,11 @@ The primary goal of the Weather Comparison Web Application is to empower users w
 - easy to refactor or integrate new api.
 - can be integrated with different weather API's just by creating a interface api class in the api_folder.py and then instantiate the api interface in the api adapter and api_facade.
 
+
 ## Installation
 
-To install the application and utilize it alongside existing applications, you need to create accounts on a few websites (no payment required!). Save the API keys for each service in the local environment.:<br>
+To install the application and utilize it alongside existing applications, you need to create accounts on a few websites (no payment required!). Save the API keys for each service in the local environment.<br>
+here are the website you will need to register:
 - weatherapi.com : this is one of the API's the application is using to get the data.
 - open-meteo.com : this is one of the API's the application is using to get the data.
 - ipgeolocation.com : this is needed to get the geolocation of the user's ip address to show the weather information by the location.
@@ -76,19 +80,19 @@ to be continued
 ## Features
 ### 1.API Limited Calles.
 
-Weatherapi API is limited to 1000 calls per month per user so each ip address that access the website is stored with the data that it got.
+- Weatherapi API is limited to 1000 calls per month per user so each ip address that access the website is stored with the data that it got.
 
 ### 2. Location-Based Forecast
 
-The weather is presented by the location of the user's IP address.
+- The weather is presented by the location of the user's IP address.
 
 ### 3. Interactive Graphs
 
-Visualize weather patterns and explore different regions using an interactive Graphs that displays current conditions and forecasts.
+- Visualize weather patterns and explore different regions using an interactive Graphs that displays current conditions and forecasts.
 
 ### 4. Application Purpose
 
-The main purpose is basicly to show you that there are always a differences in a forecast even if they updating the data its still not so accurate and not the same. 
+- The main purpose is basicly to show you that there are always a differences in a forecast even if they updating the data its still not so accurate and not the same. 
 
 
 ## Screenshots
@@ -99,11 +103,13 @@ The main purpose is basicly to show you that there are always a differences in a
 
 *Description: Overview of the main screen with description of the purpose and the application.*
 
+
 ### 2. Weather Page (Default Day View)
 
 ![weather page](screenshots/weather_page.PNG)
 
 *Description: Visual representation of the current day weather by the hours, this is the basic representation.*
+
 
 ### 3. Display
 
@@ -111,11 +117,13 @@ The main purpose is basicly to show you that there are always a differences in a
 
 *Description: You can change it to see weather information for the whole week starting from the current day.*
 
+
 ### 4. Weather Page (Week View)
 
 ![week view](screenshots/weather_page.PNG)
 
 *Description: Visual representation of the weather sorted by days, starting from the current day.*
+
 
 ## Architecture
 
@@ -159,6 +167,7 @@ In the diagram:
 - The arrows represent the flow of data or requests between components.
 - Each component is labeled with its specific responsibility.
 - 
+
 
 ## License
 
