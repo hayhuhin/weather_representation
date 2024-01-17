@@ -1,6 +1,6 @@
 # Weather Application
 
-![Weather App Logo](path/to/your/logo.png)
+![Weather App Logo](screenshots/clouds.jpg)
 
 ## Overview
 This is my small weather web application that have the data from two different API's.
@@ -17,11 +17,12 @@ The primary goal of the Weather Comparison Web Application is to empower users w
 
 ## Usage
 #### Clients
-simple weather application that shows data of two different weather apis and the client can see the differences.
+- simple weather application that shows data of two different weather apis and the client can see the differences.
 
 #### Developers
-code structure that easy to understand and refactor or integrate new api.
-can be integrated with different weather API's just by creating a interface api class in the api_folder.py and then instantiate the api interface in the api adapter and api_facade.
+- code structure that easy to understand.
+- easy to refactor or integrate new api.
+- can be integrated with different weather API's just by creating a interface api class in the api_folder.py and then instantiate the api interface in the api adapter and api_facade.
 
 ## Installation
 
@@ -95,7 +96,7 @@ The main purpose is basicly to show you that there are always a differences in a
 
 ### 1. Home Screen
 
-![Home Screen](screenshoots/first_page2.PNG)
+![Home Screen](screenshots/first_page2.PNG)
 
 *Description: Overview of the main screen with description of the purpose and the application.*
 
@@ -109,46 +110,44 @@ The main purpose is basicly to show you that there are always a differences in a
 
 ![display bar](screenshots/navbar.PNG)
 
-*Description: you can change it to see weather information of the whole week starting from the current day.*
+*Description: You can change it to see weather information for the whole week starting from the current day.*
 
-### 4. weather Page (Week View)
+### 4. Weather Page (Week View)
 
 ![week view](screenshots/weather_page.PNG)
 
 *Description: Visual representation of the weather sorted by days, starting from the current day.*
 
-
 ## Architecture
 
-now the intersting part of the application comes.
+Now, let's explore the interesting part of the application.
 
 ### Application Design Diagram
 
 ![application diagram](screenshots/top_layer_diagram.PNG)
 
-as you can see the top layer of the application is designed as Model View Controller but in the inside application im using more design patterns for code readability and simplicity.
+The top layer of the application is designed using the Model-View-Controller (MVC) pattern. Internally, additional design patterns are employed for code readability and simplicity.
 
-**MVC(Model View Controller) design pattern diagram**
+**MVC (Model-View-Controller) Design Pattern Diagram**
 
 ![application diagram](screenshots/mvc.PNG)
 
    - Serves as the core of the application, handling requests from the UI.
    - Retrieves weather data from external APIs or data sources.
 
-**Adapter design pattern diagram**
+**Adapter Design Pattern Diagram**
 
 ![application diagram](screenshots/api_diagram.PNG)
 
    - Serves as the core of the application, handling requests from the UI.
    - Retrieves weather data from external APIs or data sources.
 
-**Facade design pattern diagram**
+**Facade Design Pattern Diagram**
 
 ![application diagram](screenshots/interactive_map.png)
 
    - Serves as the core of the application, handling requests from the UI.
    - Retrieves weather data from external APIs or data sources.
-
 
 ### Component Diagram
 
@@ -160,9 +159,7 @@ In the diagram:
 
 - The arrows represent the flow of data or requests between components.
 - Each component is labeled with its specific responsibility.
-- The arrows represent the flow of data or requests between components.
-- Each component is labeled with its specific responsibility.
-
+- 
 
 ## License
 
