@@ -3,7 +3,7 @@
 ![Weather App Logo](screenshots/clouds.jpg)
 
 ## Overview
-This is my small weather web application that have the data from two different API's.
+This is my small weather web application that has the data from two different API's.
 The primary goal of the Weather Comparison Web Application is to empower users with a seamless and intuitive tool for comparing weather data from two distinct sources. By showcasing temperature, chance of rain, and feels-like temperature, web application data insures you that the data sometimes can be not so accurate.
 
 
